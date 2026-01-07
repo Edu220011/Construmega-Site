@@ -2,6 +2,10 @@
 
 Este projeto é um site base para vendas de materiais de construção, utilizando React no frontend, Node.js no backend e SQLite como banco de dados. Estrutura pronta para futuras modificações.
 
+## Segurança
+- Senhas são armazenadas com hash usando bcrypt (salt rounds: 10).
+- Tokens de autenticação são gerados para sessões.
+
 ## Estrutura
 - **backend/**: API Node.js com Express e SQLite
 - **frontend/**: Aplicação React
