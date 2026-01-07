@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const cors = require('cors');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 // Verificar se o token foi carregado
@@ -87,9 +88,9 @@ app.post('/login', async (req, res) => {
 
     // Verificar usuários normais
     const usuarios = await readJson('usuarios.json');
-    const usuario = usuarios.find(u => (u.email === email || u.cpf === email) && u.senha === senha);
+    const usuario = usuarios.find(u => (u.email === email || u.cpf === email));
 
-    if (!usuario) {
+    if (!usuario || !(await bcrypt.compare(senha, usuario.senha))) {
       return res.status(401).json({ erro: 'Credenciais inválidas' });
     }
 
@@ -250,7 +251,7 @@ app.put('/usuarios/:id/senha', async (req, res) => {
   let usuarios = await readJson('usuarios.json');
   const idx = usuarios.findIndex(u => u.id == req.params.id);
   if (idx === -1) return res.status(404).json({ erro: 'Usuário não encontrado.' });
-  usuarios[idx].senha = senha;
+  usuarios[idx].senha = await bcrypt.hash(senha, 10);
   await writeJson('usuarios.json', usuarios);
   res.json({ sucesso: true });
 });
@@ -270,12 +271,12 @@ app.put('/usuarios/:id/alterar-senha', async (req, res) => {
     }
     
     // Verificar se a senha atual está correta
-    if (usuarios[idx].senha !== senhaAtual) {
+    if (!(await bcrypt.compare(senhaAtual, usuarios[idx].senha))) {
       return res.status(400).json({ erro: 'Senha atual incorreta.' });
     }
     
-    // Atualizar para a nova senha
-    usuarios[idx].senha = novaSenha;
+    // Atualizar para a nova senha (hashed)
+    usuarios[idx].senha = await bcrypt.hash(novaSenha, 10);
     await writeJson('usuarios.json', usuarios);
     res.json({ sucesso: true, mensagem: 'Senha alterada com sucesso!' });
   } catch (err) {
@@ -434,7 +435,8 @@ app.post('/usuarios', async (req, res) => {
   let novo;
   if (req.body.tipo === 'admin') {
     // Admin não recebe id, mas agora recebe pontos: 0
-    novo = { ...req.body, pontos: 0 };
+    const hashedSenha = await bcrypt.hash(req.body.senha, 10);
+    novo = { ...req.body, senha: hashedSenha, pontos: 0 };
   } else {
     // Cliente recebe id e pontos
     let id;
@@ -443,7 +445,8 @@ app.post('/usuarios', async (req, res) => {
       id = String(Math.floor(100000 + Math.random() * 900000));
       exists = usuarios.some(u => u.id === id);
     }
-    novo = { ...req.body, id, pontos: 0 };
+    const hashedSenha = await bcrypt.hash(req.body.senha, 10);
+    novo = { ...req.body, senha: hashedSenha, id, pontos: 0 };
   }
   usuarios.push(novo);
   await writeJson('usuarios.json', usuarios);
