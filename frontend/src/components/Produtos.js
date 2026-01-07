@@ -1,65 +1,57 @@
+
 import React, { useEffect, useState } from 'react';
+import CarrosselImagens from './CarrosselImagens';
+import { useNavigate } from 'react-router-dom';
 
-
-function Produtos({ admin }) {
+function Loja({ admin }) {
   const [produtos, setProdutos] = useState([]);
-  const [form, setForm] = useState({ nome: '', preco: '', estoque: '' });
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://192.168.3.203:3001/produtos')
+    fetch('/api/produtos')
       .then(res => res.json())
       .then(setProdutos);
   }, []);
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    fetch('http://192.168.3.203:3001/produtos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, preco: parseFloat(form.preco), estoque: parseInt(form.estoque) })
-    })
-      .then(res => res.json())
-      .then(produto => setProdutos([...produtos, produto]));
-  }
-
   return (
-    <div>
-      <h2>Produtos</h2>
-      {admin && (
-        <form onSubmit={handleSubmit}>
-          <input name="nome" placeholder="Nome" value={form.nome} onChange={handleChange} required />
-          <input name="preco" placeholder="Preço" value={form.preco} onChange={handleChange} required type="number" step="0.01" />
-          <input name="estoque" placeholder="Estoque" value={form.estoque} onChange={handleChange} required type="number" />
-          <button type="submit">Adicionar</button>
-        </form>
-      )}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '16px',
-        marginTop: '24px'
-      }}>
-        {produtos.map(p => (
-          <div key={p.id} style={{
-            border: '1px solid #ddd',
-            borderRadius: 8,
-            padding: 16,
-            background: '#fafbfc',
-            boxShadow: '0 1px 4px #0001',
-            textAlign: 'center'
-          }}>
-            <h3 style={{margin:'8px 0'}}>{p.nome}</h3>
-            <p style={{fontWeight:'bold', color:'#2d3a4b'}}>R$ {p.preco}</p>
-            <p style={{fontSize:13, color:'#666'}}>Estoque: {p.estoque}</p>
+    <>
+      <div className="nav-abas nav-abas-produtos" style={{marginTop:24, marginBottom:0, justifyContent:'center'}}>
+        <div className="abas-menu abas-menu-produtos">
+          <button
+            className={"aba" + (window.location.pathname === '/produtos' ? ' ativa' : '')}
+            onClick={()=>navigate('/produtos')}
+            type="button"
+          >Loja</button>
+          <button
+            className={"aba" + (window.location.pathname === '/loja-pontuacao' ? ' ativa' : '')}
+            onClick={()=>navigate('/loja-pontuacao')}
+            type="button"
+          >Troque Seus Pontos</button>
+        </div>
+      </div>
+      <div className="produtos-grid">
+        {produtos.filter(p => !p.inativo && (String(p.moeda).toLowerCase() === 'r$' || String(p.moeda).toLowerCase() === 'real')).map(p => (
+          <div key={p.id} className="produto-card">
+            <div>
+              <div className="produto-imagem">
+                {Array.isArray(p.imagens) && p.imagens.length > 0 ? (
+                  <CarrosselImagens imagens={p.imagens} altura={120} largura={120} animacao={true} />
+                ) : p.imagem ? (
+                  <CarrosselImagens imagens={[p.imagem]} altura={120} largura={120} animacao={true} />
+                ) : (
+                  <div className="produto-sem-foto">Sem foto</div>
+                )}
+              </div>
+              <h3 className="produto-nome">{p.nome}</h3>
+              <p className="produto-preco">Preço: R$ {Number(p.preco).toFixed(2)}</p>
+              <p className="produto-estoque">Estoque: <span className={Number(p.estoque)>0?'estoque-disponivel':'estoque-indisponivel'}>{p.estoque !== undefined ? p.estoque : 'N/A'}</span></p>
+            </div>
+            <button className="produto-botao btn-padrao" onClick={() => navigate(`/produto-venda/${p.id}`)}>Ver detalhes</button>
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }
 
-export default Produtos;
+export default Loja;

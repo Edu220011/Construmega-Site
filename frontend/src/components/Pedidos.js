@@ -4,7 +4,7 @@ function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
 
   useEffect(() => {
-    fetch('http://192.168.3.203:3001/pedidos')
+    fetch('/pedidos')
       .then(res => res.json())
       .then(setPedidos);
   }, []);

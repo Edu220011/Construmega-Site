@@ -1,0 +1,75 @@
+[
+  {
+    "nome": "Eduardo Antonio",
+    "cpf": "000.000.000-00",
+    "telefone": "(19) 99959-5231",
+    "endereco": "Rua Alonso Leonel de Paiva 196",
+    "email": "dudu.almeidakcond@gmail.com",
+    "senha": "1",
+    "tipo": "cliente",
+    "id": "729485",
+    "pontos": 54,
+    "configuracoes": {
+      "temaEscuro": false
+    },
+    "tokenAtual": "23b8fe13ba0e702b84dea43331df7e57e264a90de13d3f7ccab201e85f56acfc"
+  },
+  {
+    "nome": "Eduardo Antonio",
+    "cpf": "111.111.111-11",
+    "telefone": "(11)11111-1111",
+    "endereco": "Rua Alonso Leonel de Paiva 196",
+    "email": "dudu.kcond77@gmail.com",
+    "senha": "1",
+    "tipo": "admin",
+    "id": "486650",
+    "ativo": true,
+    "pontos": 5,
+    "tokenAtual": "6e0447a6af36bf41faebfe22208918a2e04a4b922cffc83406b794d16873f19b"
+  },
+  {
+    "nome": "Marcus Vinicius da Silva Goulart",
+    "cpf": "420.557.708-70",
+    "telefone": "(19) 98159-2242",
+    "endereco": "timbiras 34",
+    "email": "marcusmvsg@gmail.com",
+    "senha": "Mac@constru25",
+    "tipo": "cliente",
+    "id": "565861",
+    "pontos": 0
+  },
+  {
+    "nome": "elen moraes",
+    "cpf": "557.316.568-27",
+    "telefone": "(19) 98297-4680",
+    "endereco": "heitor tardeli ",
+    "email": "elenmoraes83050970@gmail.com",
+    "senha": "Aa123456@",
+    "tipo": "cliente",
+    "id": "499150",
+    "pontos": 0
+  },
+  {
+    "nome": "mauricio sebastiao marciano ",
+    "cpf": "385.667.928-66",
+    "telefone": "(19) 98239-7380",
+    "endereco": "marcianomau@gmail.com",
+    "email": "marcianomau@gmail.com",
+    "senha": "maumau90",
+    "tipo": "cliente",
+    "id": "442829",
+    "pontos": 0
+  },
+  {
+    "nome": "Teste Eduardo",
+    "cpf": "124.742.066-39",
+    "telefone": "(19) 99959-5231",
+    "endereco": "Rua Alonso Leonel de Paiva, 196, Santa Lucia ",
+    "email": "dudu@gmail.com",
+    "senha": "123456",
+    "tipo": "cliente",
+    "id": "913136",
+    "pontos": 50,
+    "tokenAtual": "b89bc9db6aa4af65d32c915b7221fbdc0947adfb35f0dc7a452490b5566801c5"
+  }
+]

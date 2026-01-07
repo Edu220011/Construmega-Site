@@ -15,5 +15,22 @@ module.exports = function override(config) {
       Buffer: ['buffer', 'Buffer'],
     })
   );
+
+  // Configuração para resolver erro do Watchpack no Windows
+  config.watchOptions = {
+    ignored: [
+      '**/pagefile.sys',
+      '**/swapfile.sys',
+      '**/hiberfil.sys',
+      '**/System Volume Information/**',
+      '**/.git/**',
+      '**/node_modules/**',
+      '**/build/**',
+      '**/.cache/**'
+    ],
+    aggregateTimeout: 300,
+    poll: 1000
+  };
+
   return config;
 };

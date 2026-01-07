@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@mercadopago/sdk-react": "^1.0.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.2"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
+    "start": "set NODE_OPTIONS=--no-deprecation && react-app-rewired start",
+    "build": "set NODE_OPTIONS=--no-deprecation && react-app-rewired build",
+    "test": "set NODE_OPTIONS=--no-deprecation && react-app-rewired test",
     "eject": "react-scripts eject"
   },
+  "proxy": "http://localhost:3001",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -26,6 +28,7 @@
     ]
   },
   "devDependencies": {
+    "react-app-rewired": "^2.2.1",
     "react-scripts": "^5.0.1"
   }
 }
