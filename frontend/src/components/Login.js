@@ -26,9 +26,11 @@ function Login({ setAdmin, setCliente, setAba }) {
     .then(data => {
       console.log('🔍 Login Response:', data);
       if (data.sucesso) {
-        // Armazenar token no localStorage
+        // Armazenar token e usuarioId no localStorage
         localStorage.setItem('token', data.token);
+        localStorage.setItem('usuarioId', data.usuario.id);
         console.log('📁 Token salvo:', data.token);
+        console.log('📁 UsuarioId salvo:', data.usuario.id);
         
         if (data.usuario.tipo === 'admin') {
           console.log('🔥 DEFININDO ADMIN = TRUE');
