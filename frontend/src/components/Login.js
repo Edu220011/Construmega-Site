@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logger from '../utils/logger';
 import { getApiUrl } from '../config/api';
@@ -7,10 +7,31 @@ function Login({ setAdmin, setCliente, setAba }) {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginSenha, setLoginSenha] = useState('');
   const [showSenha, setShowSenha] = useState(false);
+  const [erro, setErro] = useState('');
   const navigate = useNavigate();
+
+  // Adicionar estilo de animação no head
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
 
   function handleLogin(e) {
     e.preventDefault();
+    setErro(''); // Limpar erro anterior
     logger.log('Tentativa de login');
     
     // Fazer requisição para a nova rota de login
@@ -55,12 +76,12 @@ function Login({ setAdmin, setCliente, setAba }) {
       } else {
         setAdmin(false);
         setCliente(null);
-        alert(data.erro || 'Login inválido!');
+        setErro(data.erro || 'Credenciais inválidas!');
       }
     })
     .catch(error => {
       logger.error('Erro no login', error);
-      alert('Erro ao fazer login. Verifique sua conexão.');
+      setErro('Erro ao fazer login. Verifique sua conexão.');
     });
   }
 
@@ -128,6 +149,29 @@ function Login({ setAdmin, setCliente, setAba }) {
         }}>
           Acesse sua conta
         </h3>
+        {/* Mensagem de erro estilizada */}
+        {erro && (
+          <div style={{
+            background: 'linear-gradient(135deg, #fee 0%, #fdd 100%)',
+            color: '#c33',
+            padding: '12px 16px',
+            borderRadius: 8,
+            marginBottom: 16,
+            border: '1px solid #fcc',
+            fontSize: 14,
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            animation: 'slideDown 0.3s ease-out'
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+              <path d="M12 8V12M12 16H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <span>{erro}</span>
+          </div>
+        )}
         <form onSubmit={handleLogin} style={{display:'flex',flexDirection:'column',gap:18}}>
           <input
             type="text"
