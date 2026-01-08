@@ -1145,7 +1145,7 @@ function ListaUsuarios({ admin = false, cliente, setAdmin, setCliente }) {
           setMsg('Salvando...');
           const usuarioAtual = usuarios.find(x => x.id === u.id);
           const payload = { ...form, tipo: (form.tipo || usuarioAtual?.tipo || 'gerente') };
-          const res = await fetch(`/usuarios/${u.id}`, {
+          const res = await fetch(getApiUrl(`usuarios/${u.id}`), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1170,7 +1170,7 @@ function ListaUsuarios({ admin = false, cliente, setAdmin, setCliente }) {
           setMsg('Resetando senha...');
           // Gera senha aleatória de 8 dígitos
           const novaSenha = senha || Math.random().toString(36).slice(-8);
-          const res = await fetch(`/usuarios/${u.id}/senha`, {
+          const res = await fetch(getApiUrl(`usuarios/${u.id}/senha`), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ senha: novaSenha })

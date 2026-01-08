@@ -26,7 +26,7 @@ function Perfil({ cliente, setCliente }) {
 
     try {
       // Primeiro, salvar os dados pessoais
-      const res = await fetch(`/usuarios/${cliente.id}`, {
+      const res = await fetch(getApiUrl(`usuarios/${cliente.id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -49,7 +49,7 @@ function Perfil({ cliente, setCliente }) {
           return;
         }
 
-        const senhaRes = await fetch(`/usuarios/${cliente.id}/alterar-senha`, {
+        const senhaRes = await fetch(getApiUrl(`usuarios/${cliente.id}/alterar-senha`), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

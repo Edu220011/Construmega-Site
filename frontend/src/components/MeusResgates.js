@@ -29,7 +29,7 @@ function MeusResgates({ cliente, empresaConfig }) {
     
     setErro(""); // Limpar erro antes de fazer requisição
     
-    fetch(`/pedidos/${usuarioId}`)
+    fetch(getApiUrl(`pedidos/${usuarioId}`))
       .then(res => {
         if (!res.ok) {
           throw new Error('Erro ao carregar pedidos');

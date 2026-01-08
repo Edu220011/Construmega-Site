@@ -27,7 +27,7 @@ function AdicionarPontos() {
     if (!pontos || isNaN(Number(pontos))) return setMsg('Informe a quantidade de pontos.');
     // Atualiza pontos do usuário (mock local, precisa de backend real para produção)
     try {
-      const res = await fetch(`/usuarios/${usuario.id}/pontos`, {
+      const res = await fetch(getApiUrl(`usuarios/${usuario.id}/pontos`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pontos: Number(pontos) })

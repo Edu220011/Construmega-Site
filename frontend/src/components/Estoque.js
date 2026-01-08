@@ -125,7 +125,7 @@ function Estoque() {
     setMsgRemover("Removendo...");
     try {
       const novoEstoque = Math.max(0, (Number(produtoRemover.estoque) || 0) - Number(quantidadeRemover));
-      const res = await fetch(`/api/produtos/${produtoRemover.id}`, {
+      const res = await fetch(getApiUrl(`api/produtos/${produtoRemover.id}`), {
         method: 'PUT',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ ...produtoRemover, estoque: novoEstoque })
@@ -164,7 +164,7 @@ function Estoque() {
     setMsg("Adicionando...");
     try {
       const novoEstoque = (Number(produtoBuscado.estoque) || 0) + Number(quantidade);
-      const res = await fetch(`/api/produtos/${produtoBuscado.id}`, {
+      const res = await fetch(getApiUrl(`api/produtos/${produtoBuscado.id}`), {
         method: 'PUT',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ ...produtoBuscado, estoque: novoEstoque })

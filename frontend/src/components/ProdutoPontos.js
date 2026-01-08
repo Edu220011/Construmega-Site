@@ -72,7 +72,7 @@ function ProdutoPontos({ cliente }) {
       
       // Atualiza pontos do usuário automaticamente após resgate
       try {
-        const usuarioAtualizado = await fetch(`/usuarios/${cliente.id}`).then(r => {
+        const usuarioAtualizado = await fetch(getApiUrl(`usuarios/${cliente.id}`)).then(r => {
           if (!r.ok) {
             throw new Error('Erro ao buscar usuário atualizado');
           }

@@ -54,7 +54,7 @@ function AdicionarPontosForm() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`/usuarios/${id}/pontos`, {
+      const res = await fetch(getApiUrl(`usuarios/${id}/pontos`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pontos: Number(pontos) })

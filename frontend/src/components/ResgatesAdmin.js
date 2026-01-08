@@ -57,7 +57,7 @@ function ResgatesAdmin() {
       return;
     }
     try {
-      const res = await fetch(`/pedidos/${pedido.id}/status`, {
+      const res = await fetch(getApiUrl(`pedidos/${pedido.id}/status`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Aprovado' })
@@ -87,7 +87,7 @@ function ResgatesAdmin() {
       return;
     }
     try {
-      const res = await fetch(`/pedidos/${pedido.id}/status`, {
+      const res = await fetch(getApiUrl(`pedidos/${pedido.id}/status`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Recusado' })
@@ -107,7 +107,7 @@ function ResgatesAdmin() {
       return;
     }
     try {
-      const res = await fetch(`/pedidos/${pedidoId}`, {
+      const res = await fetch(getApiUrl(`pedidos/${pedidoId}`), {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error('Erro ao excluir pedido');

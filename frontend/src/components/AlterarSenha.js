@@ -19,7 +19,7 @@ function AlterarSenha({ cliente, setCliente }) {
       return;
     }
     setMsg('Salvando...');
-    const res = await fetch(`/usuarios/${cliente.id}/senha`, {
+    const res = await fetch(getApiUrl(`usuarios/${cliente.id}/senha`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ senha: novaSenha })

@@ -1029,7 +1029,7 @@ function ConfigProduto() {
                           e.stopPropagation();
                           const novoValor = e.target.checked;
                           if (!novoValor || produtos.filter(p => p.promo).length < 10) {
-                            await fetch(`/api/produtos/${prod.id}`, {
+                            await fetch(getApiUrl(`api/produtos/${prod.id}`), {
                               method: 'PUT',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ promo: novoValor })
@@ -1087,7 +1087,7 @@ function ConfigProduto() {
                             codigoBarras: editForm.codigo_barra || ''
                           };
                           delete payload.codigo_barra;
-                          fetch(`/produtos/${prod.id}`, {
+                          fetch(getApiUrl(`produtos/${prod.id}`), {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
@@ -1363,7 +1363,7 @@ function ConfigProduto() {
                                 const novoStatus = e.target.value;
                                 setEditForm({...editForm, status: novoStatus});
                                 // Atualiza backend instantaneamente
-                                await fetch(`/produtos/${prod.id}`, {
+                                await fetch(getApiUrl(`produtos/${prod.id}`), {
                                   method: 'PUT',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ ...editForm, status: novoStatus, codigoBarras: editForm.codigo_barra || '' })
@@ -1456,7 +1456,7 @@ function ConfigProduto() {
                                   codigoBarras: editForm.codigo_barra || ''
                                 };
                                 delete payload.codigo_barra;
-                                await fetch(`/produtos/${prod.id}`, {
+                                await fetch(getApiUrl(`produtos/${prod.id}`), {
                                   method: 'PUT',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify(payload)

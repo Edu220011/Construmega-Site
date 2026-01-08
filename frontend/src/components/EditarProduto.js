@@ -27,7 +27,7 @@ function EditarProduto() {
   useEffect(() => {
     if (id) {
       setLoading(true);
-      fetch(`/api/produtos/${id}`)
+      fetch(getApiUrl(`api/produtos/${id}`))
         .then(res => {
           if (!res.ok) throw new Error('Produto não encontrado');
           return res.json();
@@ -121,7 +121,7 @@ function EditarProduto() {
     console.log('submit');
     setErro("");
     // Suporte a múltiplas imagens
-    fetch(`/api/produtos/${id}` , {
+    fetch(getApiUrl(`api/produtos/${id}`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
