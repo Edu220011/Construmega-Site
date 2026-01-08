@@ -58,6 +58,9 @@ cd /root/backup-repo
 
 # Clonar repositório (usar SSH)
 git clone git@github.com:Edu220011/Construmega-Backup.git .
+
+# OU usar HTTPS (pedirá credenciais)
+git clone https://github.com/Edu220011/Construmega-Backup.git .
 ```
 
 ### 2.3 Criar Estrutura de Backup

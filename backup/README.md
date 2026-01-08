@@ -1,19 +1,20 @@
 # 🔄 Sistema de Backup Automático para GitHub
 
 ## 📋 Visão Geral
-Sistema que faz backup automático do projeto no GitHub a cada 30 minutos quando a VPS estiver rodando.
+Sistema que faz backup automático dos dados do projeto para o repositório dedicado **Construmega-Backup** no GitHub.
 
-**Arquivos de Dados Críticos Incluídos:**
-- ✅ `backend/usuarios.json` - Dados de usuários
-- ✅ `backend/pedidos.json` - Histórico de pedidos
-- ✅ `backend/produtos.json` - Catálogo de produtos
-- ✅ `backend/configuracoes.json` - Configurações do sistema
+**🔗 Repositório Principal:** https://github.com/Edu220011/Construmega-Site
+**🔗 Repositório de Backup:** https://github.com/Edu220011/Construmega-Backup
+
+**Dois métodos de backup disponíveis:**
+1. **backup-auto.sh / backup-auto.bat** - Backup do projeto completo (desenvolvimento)
+2. **backup-para-repo.sh / backup-para-repo.bat** - Backup organizado para repositório dedicado (VPS)
 
 ---
 
-## 🐧 Linux/VPS (Recomendado)
+## 🎯 Método 1: Backup do Projeto Completo (Desenvolvimento)
 
-### 1️⃣ Preparar o Script
+### Para Linux/VPS
 
 ```bash
 # Navegar até a pasta de backup
@@ -22,10 +23,46 @@ cd backup
 # Tornar o script executável
 chmod +x backup-auto.sh
 
-# O script já detecta automaticamente o diretório do projeto!
+# Executar manualmente
+./backup-auto.sh
 ```
 
-### 2️⃣ Configurar Credenciais Git (Importante!)
+**Arquivos incluídos:**
+- ✅ Todos os arquivos do projeto
+- ✅ `backend/usuarios.json`
+- ✅ `backend/pedidos.json`
+- ✅ `backend/produtos.json`
+- ✅ `backend/configuracoes.json`
+
+### Para Windows
+
+```cmd
+cd backup
+backup-auto.bat
+```
+
+---
+
+## 🎯 Método 2: Backup Organizado para Repositório Dedicado (Recomendado para VPS)
+
+Este método envia backups organizados para o repositório **Construmega-Backup**.
+
+### 🐧 Configuração na VPS
+
+#### 1️⃣ Preparar Scripts
+
+```bash
+# Navegar até a pasta de backup
+cd /root/Construmega-Site/backup
+
+# Tornar o script executável
+chmod +x backup-para-repo.sh
+
+# Testar o script
+./backup-para-repo.sh
+```
+
+#### 2️⃣ Configurar Credenciais Git (Importante!)
 
 Para evitar pedir senha a cada push:
 
@@ -54,39 +91,46 @@ git config --global credential.helper store
 git remote set-url origin https://SEU_USUARIO:SEU_TOKEN@github.com/usuario/repo.git
 ```
 
-### 3️⃣ Configurar Cron Job
+#### 3️⃣ Configurar Cron Job para Backup Automático
 
 ```bash
 # Abrir editor de cron
 crontab -e
 
-# Adicionar linha para executar a cada 30 minutos
-*/30 * * * * /caminho/completo/para/backup/backup-auto.sh >> /var/log/backup-git.log 2>&1
+# Adicionar linha para backup a cada 30 minutos
+*/30 * * * * /root/Construmega-Site/backup/backup-para-repo.sh >> /var/log/backup-construmega.log 2>&1
 
-# Exemplo real (ajuste o caminho):
-# */30 * * * * /root/site/backup/backup-auto.sh >> /var/log/backup-git.log 2>&1
+# OU para backup a cada hora
+0 * * * * /root/Construmega-Site/backup/backup-para-repo.sh >> /var/log/backup-construmega.log 2>&1
 ```
 
-### 4️⃣ Verificar Logs
+#### 4️⃣ Verificar Logs
 
 ```bash
 # Ver últimos backups
-tail -f /var/log/backup-git.log
+tail -f /var/log/backup-construmega.log
 
 # Ver todos os backups do dia
-grep "$(date '+%Y-%m-%d')" /var/log/backup-git.log
+grep "$(date '+%Y-%m-%d')" /var/log/backup-construmega.log
 ```
 
 ---
 
-## 🪟 Windows (Desenvolvimento Local)
+## 🪟 Windows (Backup para Repositório Dedicado)
 
-### 1️⃣ Configurar Tarefa Agendada
+### 1️⃣ Executar Manualmente
+
+```cmd
+cd "C:\Users\Eduardo Antonio\Desktop\site 1.3\site 1.4\backup"
+backup-para-repo.bat
+```
+
+### 2️⃣ Configurar Tarefa Agendada (Opcional)
 
 1. **Abrir "Agendador de Tarefas"** (Task Scheduler)
 2. Criar Nova Tarefa:
-   - Nome: `Backup GitHub Automático`
-   - Descrição: `Backup a cada 30 minutos`
+   - Nome: `Backup Construmega para Repositório Dedicado`
+   - Descrição: `Backup a cada 30 minutos para Construmega-Backup`
 
 3. **Aba "Gatilhos"**:
    - Novo → Repetir tarefa a cada: **30 minutos**
@@ -94,19 +138,44 @@ grep "$(date '+%Y-%m-%d')" /var/log/backup-git.log
 
 4. **Aba "Ações"**:
    - Programa: `C:\Windows\System32\cmd.exe`
-   - Argumentos: `/c "c:\Users\Eduardo Antonio\Desktop\site 1.3\site 1.4\backup\backup-auto.bat"`
+   - Argumentos: `/c "C:\Users\Eduardo Antonio\Desktop\site 1.3\site 1.4\backup\backup-para-repo.bat"`
 
 5. **Aba "Condições"**:
    - Desmarcar "Iniciar somente se o computador estiver usando energia CA"
 
-### 2️⃣ Configurar Credenciais
+---
 
-```cmd
-REM Abrir Git Bash e executar:
-git config --global credential.helper wincred
+## 📊 Estrutura do Repositório de Backup
 
-REM Ou usar token (mesmo processo do Linux)
+O repositório **Construmega-Backup** terá esta estrutura:
+
 ```
+Construmega-Backup/
+├── dados/
+│   ├── usuarios/
+│   │   ├── usuarios-latest.json       # Último backup
+│   │   └── usuarios-2026-01-08_*.json # Backups com timestamp
+│   ├── pedidos/
+│   │   ├── pedidos-latest.json
+│   │   └── pedidos-2026-01-08_*.json
+│   ├── produtos/
+│   │   ├── produtos-latest.json
+│   │   └── produtos-2026-01-08_*.json
+│   └── configuracoes/
+│       ├── configuracoes-latest.json
+│       ├── configproduto-latest.json
+│       └── perfis-latest.json
+├── database/
+│   ├── database-latest.sqlite
+│   └── database-2026-01-08_*.sqlite
+├── logs/
+│   └── *.log (últimos 7 dias)
+└── backup-info.txt                    # Informações do último backup
+```
+
+**Limpeza Automática:**
+- Backups com timestamp são mantidos por 7 dias
+- Arquivos `-latest` são sempre atualizados
 
 ---
 
@@ -117,33 +186,97 @@ REM Ou usar token (mesmo processo do Linux)
 **Linux (cron):**
 ```bash
 # A cada 15 minutos
-*/15 * * * * /caminho/backup/backup-auto.sh
+*/15 * * * * /root/Construmega-Site/backup/backup-para-repo.sh
 
 # A cada 1 hora
-0 * * * * /caminho/backup/backup-auto.sh
+0 * * * * /root/Construmega-Site/backup/backup-para-repo.sh
 
 # A cada 2 horas
-0 */2 * * * /caminho/backup/backup-auto.sh
+0 */2 * * * /root/Construmega-Site/backup/backup-para-repo.sh
+
+# Diariamente às 2h da manhã
+0 2 * * * /root/Construmega-Site/backup/backup-para-repo.sh
 ```
 
 **Windows:**
 - Editar a tarefa no Agendador
 - Alterar intervalo de repetição
 
-### Excluir Arquivos do Backup
+---
 
-**IMPORTANTE:** Os arquivos JSON de dados NÃO devem estar no `.gitignore`.
+## 🔍 Verificação e Recuperação
 
-Adicione apenas arquivos temporários:
+### Verificar Último Backup
+
+```bash
+# Ver informações do último backup
+cat /root/Construmega-Backup/backup-info.txt
+
+# Ver commits recentes
+cd /root/Construmega-Backup
+git log --oneline -10
 ```
-# Arquivos temporários
-*.tmp
-*.cache
-nul
 
-# Logs
-debug.txt
-*.log
+### Recuperar Dados do Backup
+
+```bash
+# 1. Clonar repositório de backup
+git clone https://github.com/Edu220011/Construmega-Backup.git
+
+# 2. Copiar arquivos necessários
+cp Construmega-Backup/dados/usuarios/usuarios-latest.json /root/Construmega-Site/backend/
+cp Construmega-Backup/dados/pedidos/pedidos-latest.json /root/Construmega-Site/backend/
+cp Construmega-Backup/dados/produtos/produtos-latest.json /root/Construmega-Site/backend/
+
+# 3. Reiniciar serviços
+pm2 restart all
+```
+
+---
+
+## 🚨 Solução de Problemas
+
+### Erro: "Permission denied"
+```bash
+chmod +x backup-para-repo.sh
+```
+
+### Erro: "Git not found"
+```bash
+# Linux
+dnf install git -y  # AlmaLinux/RHEL
+# ou
+apt install git -y  # Ubuntu/Debian
+
+# Windows
+# Baixar e instalar Git: https://git-scm.com/download/win
+```
+
+### Erro ao fazer push
+```bash
+# Verificar credenciais
+git config --global credential.helper store
+
+# Ou configurar SSH
+ssh-keygen -t ed25519 -C "seu-email@example.com"
+cat ~/.ssh/id_ed25519.pub  # Adicionar no GitHub
+```
+
+### Limpar espaço em disco
+```bash
+# Remover backups muito antigos
+cd /root/Construmega-Backup
+find dados -name "*-20*.json" -mtime +30 -delete
+find database -name "database-20*.sqlite" -mtime +30 -delete
+```
+
+---
+
+## 📚 Documentação Adicional
+
+- [GUIA-BACKUP-GITHUB.md](../GUIA-BACKUP-GITHUB.md) - Guia completo de backup
+- [GUIA-VPS-AUTOMATICO.md](../GUIA-VPS-AUTOMATICO.md) - Atualização automática da VPS
+- [GUIA-VPS-MANUAL.md](../GUIA-VPS-MANUAL.md) - Deploy manual na VPS
 
 # Node modules
 node_modules/
