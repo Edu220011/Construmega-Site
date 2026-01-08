@@ -5,6 +5,7 @@ function Estoque() {
   const [termoBusca, setTermoBusca] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
   const [filtroEstoque, setFiltroEstoque] = useState('todos');
+  const [filtroMoeda, setFiltroMoeda] = useState('todos');
   const [ordemClassificacao, setOrdemClassificacao] = useState('nome');
   const [visualizacao, setVisualizacao] = useState('tabela'); // 'tabela' ou 'grid'
 
@@ -27,7 +28,9 @@ function Estoque() {
                         (filtroEstoque === 'zerado' && Number(p.estoque) === 0) ||
                         (filtroEstoque === 'disponivel' && Number(p.estoque) > 0);
     
-    return matchNome && matchCategoria && matchEstoque;
+    const matchMoeda = filtroMoeda === 'todos' || p.moeda === filtroMoeda;
+    
+    return matchNome && matchCategoria && matchEstoque && matchMoeda;
   }).sort((a, b) => {
     switch(ordemClassificacao) {
       case 'nome': return a.nome.localeCompare(b.nome);
@@ -121,7 +124,7 @@ function Estoque() {
     setMsgRemover("Removendo...");
     try {
       const novoEstoque = Math.max(0, (Number(produtoRemover.estoque) || 0) - Number(quantidadeRemover));
-      const res = await fetch(`/produtos/${produtoRemover.id}`, {
+      const res = await fetch(`/api/produtos/${produtoRemover.id}`, {
         method: 'PUT',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ ...produtoRemover, estoque: novoEstoque })
@@ -160,7 +163,7 @@ function Estoque() {
     setMsg("Adicionando...");
     try {
       const novoEstoque = (Number(produtoBuscado.estoque) || 0) + Number(quantidade);
-      const res = await fetch(`/produtos/${produtoBuscado.id}`, {
+      const res = await fetch(`/api/produtos/${produtoBuscado.id}`, {
         method: 'PUT',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ ...produtoBuscado, estoque: novoEstoque })
@@ -267,7 +270,28 @@ function Estoque() {
           </div>
 
           {/* Filtros em linha */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
+            {/* Filtro de Moeda */}
+            <div>
+              <label style={{display:'block',marginBottom:6,fontWeight:500,color:'#2d3a4b',fontSize:'clamp(12px, 3vw, 13px)'}}>Moeda</label>
+              <select 
+                value={filtroMoeda} 
+                onChange={(e) => setFiltroMoeda(e.target.value)}
+                style={{
+                  width:'100%',
+                  padding:'10px 8px',
+                  border:'1px solid #e9ecf3',
+                  borderRadius:6,
+                  fontSize:'clamp(12px, 3vw, 14px)',
+                  background:'#fff'
+                }}
+              >
+                <option value="todos">🌐 Todos</option>
+                <option value="real">💰 Real</option>
+                <option value="pontos">🎯 Pontos</option>
+              </select>
+            </div>
+            
             {/* Filtro de Estoque */}
             <div>
               <label style={{display:'block',marginBottom:6,fontWeight:500,color:'#2d3a4b',fontSize:'clamp(12px, 3vw, 13px)'}}>Status</label>
@@ -317,10 +341,11 @@ function Estoque() {
         {/* Contadores de Filtros */}
         <div style={{textAlign:'center',fontSize:'clamp(12px, 3vw, 13px)',color:'#666'}}>
           <span>📊 {produtosFiltrados.length} de {produtos.length}</span>
-          {(filtroEstoque !== 'todos' || termoBusca) && (
+          {(filtroEstoque !== 'todos' || filtroMoeda !== 'todos' || termoBusca) && (
             <div style={{marginTop:4,fontSize:'clamp(10px, 2.5vw, 11px)',color:'#888'}}>
               {filtroEstoque !== 'todos' && <span>Filtrado</span>}
-              {termoBusca && <span>{filtroEstoque !== 'todos' ? ' • ' : ''}Buscando</span>}
+              {filtroMoeda !== 'todos' && <span>{filtroEstoque !== 'todos' ? ' • ' : ''}Moeda</span>}
+              {termoBusca && <span>{(filtroEstoque !== 'todos' || filtroMoeda !== 'todos') ? ' • ' : ''}Buscando</span>}
             </div>
           )}
         </div>
@@ -363,7 +388,7 @@ function Estoque() {
                   <th style={{padding:'8px 4px',textAlign:'center',fontWeight:500}}>📷</th>
                   <th style={{padding:'8px 4px',textAlign:'center',fontWeight:500}}>ID</th>
                   <th style={{padding:'8px 6px',textAlign:'left',fontWeight:500}}>Nome</th>
-                  <th style={{padding:'8px 4px',textAlign:'center',fontWeight:500}}>R$</th>
+                  <th style={{padding:'8px 4px',textAlign:'center',fontWeight:500}}>Valor</th>
                   <th style={{padding:'8px 4px',textAlign:'center',fontWeight:500}}>Qtd</th>
                   <th style={{padding:'8px 4px',textAlign:'center',fontWeight:500}}>⚡</th>
                 </tr>
@@ -373,6 +398,7 @@ function Estoque() {
                   const valorTotal = (Number(p.preco) || 0) * (Number(p.estoque) || 0);
                   const isEstoqueZero = Number(p.estoque) === 0;
                   const isEstoqueBaixo = Number(p.estoque) > 0 && Number(p.estoque) <= 5;
+                  const isPontos = p.moeda === 'pontos';
                   
                   return (
                     <tr key={p.id} style={{
@@ -405,8 +431,8 @@ function Estoque() {
                           </span>
                         </div>
                       </td>
-                      <td style={{padding:'6px 4px',textAlign:'center',fontWeight:500,color:'#28a745'}}>
-                        {(Number(p.preco) || 0).toFixed(0)}
+                      <td style={{padding:'6px 4px',textAlign:'center',fontWeight:500,color: isPontos ? '#f59e0b' : '#28a745'}}>
+                        {isPontos ? `⭐ ${(Number(p.preco) || 0).toFixed(0)}` : `R$ ${(Number(p.preco) || 0).toFixed(2)}`}
                       </td>
                       <td style={{padding:'6px 4px',textAlign:'center'}}>
                         <span style={{
@@ -437,6 +463,7 @@ function Estoque() {
               const valorTotal = (Number(p.preco) || 0) * (Number(p.estoque) || 0);
               const isEstoqueZero = Number(p.estoque) === 0;
               const isEstoqueBaixo = Number(p.estoque) > 0 && Number(p.estoque) <= 5;
+              const isPontos = p.moeda === 'pontos';
               
               return (
                 <div key={p.id} style={{
@@ -483,8 +510,10 @@ function Estoque() {
                   
                   <div style={{display:'grid',gridTemplateColumns:'repeat(3, 1fr)',gap:8,fontSize:'clamp(11px, 3vw, 12px)'}}>
                     <div style={{textAlign:'center',padding:'4px 6px',background:'#f8f9fa',borderRadius:4}}>
-                      <div style={{color:'#6c757d',fontSize:'clamp(9px, 2.5vw, 10px)'}}>Preço</div>
-                      <div style={{fontWeight:600,color:'#28a745',fontSize:'clamp(10px, 3vw, 11px)'}}>R$ {(Number(p.preco) || 0).toFixed(0)}</div>
+                      <div style={{color:'#6c757d',fontSize:'clamp(9px, 2.5vw, 10px)'}}>Valor</div>
+                      <div style={{fontWeight:600,color: isPontos ? '#f59e0b' : '#28a745',fontSize:'clamp(10px, 3vw, 11px)'}}>
+                        {isPontos ? `⭐ ${(Number(p.preco) || 0).toFixed(0)}` : `R$ ${(Number(p.preco) || 0).toFixed(2)}`}
+                      </div>
                     </div>
                     <div style={{textAlign:'center',padding:'4px 6px',background:'#f8f9fa',borderRadius:4}}>
                       <div style={{color:'#6c757d',fontSize:'clamp(9px, 2.5vw, 10px)'}}>Estoque</div>
@@ -498,7 +527,9 @@ function Estoque() {
                     </div>
                     <div style={{textAlign:'center',padding:'4px 6px',background:'#f8f9fa',borderRadius:4}}>
                       <div style={{color:'#6c757d',fontSize:'clamp(9px, 2.5vw, 10px)'}}>Total</div>
-                      <div style={{fontWeight:600,color:'#6f42c1',fontSize:'clamp(10px, 3vw, 11px)'}}>R$ {valorTotal.toFixed(0)}</div>
+                      <div style={{fontWeight:600,color:'#6f42c1',fontSize:'clamp(10px, 3vw, 11px)'}}>
+                        {isPontos ? `⭐ ${valorTotal.toFixed(0)}` : `R$ ${valorTotal.toFixed(2)}`}
+                      </div>
                     </div>
                   </div>
                 </div>

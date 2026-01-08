@@ -17,6 +17,7 @@ function ProdutoPontos({ cliente }) {
   const { id } = useParams();
   const [produto, setProduto] = useState(null);
   const [erro, setErro] = useState('');
+  const [mostrarPainelSucesso, setMostrarPainelSucesso] = useState(false);
   const navigate = useNavigate();
 
   const empresaConfig = useEmpresaConfig();
@@ -45,28 +46,48 @@ function ProdutoPontos({ cliente }) {
         alert(`Estoque insuficiente. Disponível: ${produtoAtual.estoque ?? 0} unidades.`);
         return;
       }
+      
       const res = await fetch('/pedidos', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           usuarioId: cliente.id,
           produtoId: produtoAtual.id,
           produtoNome: produtoAtual.nome,
-          pontos: Number(produtoAtual.preco) * quantidade
+          pontos: Number(produtoAtual.preco),
+          quantidade: quantidade
         })
       });
+      
       if (!res.ok) {
         const erro = await res.json();
         alert(erro.erro || 'Erro ao solicitar resgate.');
         return;
       }
+      
+      const pedido = await res.json();
+      
       // Atualiza pontos do usuário automaticamente após resgate
-      const usuarioAtualizado = await fetch(`/usuarios/${cliente.id}`).then(r=>r.json());
-      if (typeof window.setCliente === 'function') {
-        window.setCliente(usuarioAtualizado);
+      try {
+        const usuarioAtualizado = await fetch(`/usuarios/${cliente.id}`).then(r => {
+          if (!r.ok) {
+            throw new Error('Erro ao buscar usuário atualizado');
+          }
+          return r.json();
+        });
+        
+        if (typeof window.setCliente === 'function') {
+          window.setCliente(usuarioAtualizado);
+        }
+      } catch (errUsuario) {
+        console.error('Erro ao atualizar pontos do usuário:', errUsuario);
+        // Não bloqueia o fluxo - apenas não atualiza os pontos na interface
       }
-      alert('Resgate solicitado com sucesso!');
-      navigate('/meus-resgates');
+      
+      // Mostrar painel customizado de sucesso
+      setMostrarPainelSucesso(true);
     } catch (err) {
       alert('Erro ao conectar com o servidor.');
     }
@@ -130,6 +151,135 @@ function ProdutoPontos({ cliente }) {
 
   return (
     <div>
+      {/* Painel de sucesso customizado */}
+      {mostrarPainelSucesso && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)',
+            borderRadius: 24,
+            maxWidth: 500,
+            width: '100%',
+            padding: '40px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            border: '3px solid #10b981',
+            textAlign: 'center',
+            position: 'relative',
+            animation: 'slideIn 0.3s ease-out'
+          }}>
+            {/* Ícone de sucesso */}
+            <div style={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              borderRadius: '50%',
+              width: 80,
+              height: 80,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '3rem',
+              margin: '0 auto 24px',
+              boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4)'
+            }}>✅</div>
+            
+            {/* Título */}
+            <h2 style={{
+              color: '#065f46',
+              fontSize: '1.75rem',
+              fontWeight: 700,
+              marginBottom: 16
+            }}>Resgate Realizado!</h2>
+            
+            {/* Mensagem */}
+            <p style={{
+              color: '#047857',
+              fontSize: '1.125rem',
+              lineHeight: 1.6,
+              marginBottom: 32
+            }}>
+              Seu pedido foi registrado com sucesso.<br />
+              Deseja visualizar o comprovante agora?
+            </p>
+            
+            {/* Botões */}
+            <div style={{
+              display: 'flex',
+              gap: 12,
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              <button
+                onClick={() => {
+                  setMostrarPainelSucesso(false);
+                  navigate('/meus-resgates');
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '14px 32px',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                }}
+              >
+                Ver Comprovante
+              </button>
+              
+              <button
+                onClick={() => setMostrarPainelSucesso(false)}
+                style={{
+                  background: '#ffffff',
+                  color: '#047857',
+                  border: '2px solid #10b981',
+                  borderRadius: 12,
+                  padding: '14px 32px',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#f0fdf4';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#ffffff';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                }}
+              >
+                Continuar Navegando
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <button
         onClick={() => navigate('/loja-pontuacao')}
         style={{
@@ -160,7 +310,7 @@ function ProdutoPontos({ cliente }) {
         <span style={{ fontSize: '1.25rem' }}>⭐</span>
         Voltar para Loja de Pontos
       </button>
-      <PainelCompraProduto produto={produto} onTrocar={handleTrocar} pontosUsuario={cliente?.pontos ?? 0} />
+      <PainelCompraProduto produto={produto} onTrocar={handleTrocar} pontosUsuario={cliente?.pontos ?? 0} cliente={cliente} />
       <div style={{
         maxWidth: 900,
         margin: '40px auto 0',

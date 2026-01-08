@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import logger from '../utils/logger';
 
 function Login({ setAdmin, setCliente, setAba }) {
   const [loginEmail, setLoginEmail] = useState('');
@@ -9,7 +10,7 @@ function Login({ setAdmin, setCliente, setAba }) {
 
   function handleLogin(e) {
     e.preventDefault();
-    console.log('Tentando login com:', loginEmail, loginSenha);
+    logger.log('Tentativa de login');
     
     // Fazer requisição para a nova rota de login
     fetch('/login', {
@@ -24,23 +25,20 @@ function Login({ setAdmin, setCliente, setAba }) {
     })
     .then(res => res.json())
     .then(data => {
-      console.log('🔍 Login Response:', data);
+      logger.log('Login response', { success: data.sucesso });
       if (data.sucesso) {
         // Armazenar token e usuarioId no localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('usuarioId', data.usuario.id);
-        console.log('📁 Token salvo:', data.token);
-        console.log('📁 UsuarioId salvo:', data.usuario.id);
+        logger.log('Token e usuarioId salvos');
         
         if (data.usuario.tipo === 'admin') {
-          console.log('🔥 DEFININDO ADMIN = TRUE');
+          logger.log('Login como administrador');
           localStorage.setItem('admin', 'true'); // Salvar PRIMEIRO no localStorage
           setAdmin(true); // Depois definir o estado
-          console.log('💾 localStorage admin salvo como: true');
           setCliente(data.usuario);
-          console.log('👤 Cliente definido:', data.usuario);
         } else {
-          console.log('👥 Usuário comum, admin = false');
+          logger.log('Login como usuário comum');
           localStorage.removeItem('admin'); // Remover PRIMEIRO
           setAdmin(false); // Depois definir o estado
           setCliente(data.usuario);
@@ -60,7 +58,7 @@ function Login({ setAdmin, setCliente, setAba }) {
       }
     })
     .catch(error => {
-      console.error('Erro no login:', error);
+      logger.error('Erro no login', error);
       alert('Erro ao fazer login. Verifique sua conexão.');
     });
   }

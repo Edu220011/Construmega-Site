@@ -12,7 +12,8 @@
     "configuracoes": {
       "temaEscuro": false
     },
-    "tokenAtual": "23b8fe13ba0e702b84dea43331df7e57e264a90de13d3f7ccab201e85f56acfc"
+    "tokenAtual": "23b8fe13ba0e702b84dea43331df7e57e264a90de13d3f7ccab201e85f56acfc",
+    "ativo": true
   },
   {
     "nome": "Eduardo Antonio",
@@ -25,7 +26,7 @@
     "id": "486650",
     "ativo": true,
     "pontos": 5,
-    "tokenAtual": "ddce8f9a527708f57c5dadc80b35913cb409025539b2bcf8c9a6b182288ad537"
+    "tokenAtual": "0dd7cf7590f1b18b533c4bce31b9670ed3b4fca14b88b6a96a25f8508e87d985"
   },
   {
     "nome": "Marcus Vinicius da Silva Goulart",
@@ -69,7 +70,7 @@
     "senha": "$2b$10$9PITQBCDdJEHoEF3jeMR8u1Zeps9Ie02PuZ2hsCS/w2fLUd5eMKyK",
     "tipo": "cliente",
     "id": "913136",
-    "pontos": 50,
-    "tokenAtual": "b89bc9db6aa4af65d32c915b7221fbdc0947adfb35f0dc7a452490b5566801c5"
+    "pontos": 41,
+    "tokenAtual": "3b1f589e268902fcf08ab323f8bdb0ee2df7181bd4680229d8b9ac4c273ceb89"
   }
 ]

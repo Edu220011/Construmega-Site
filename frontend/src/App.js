@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import logger from './utils/logger';
 import './App.css';
 import './components/BotoesPadrao.css';
 import Produtos from './components/Produtos';
@@ -42,7 +43,7 @@ function useEmpresaConfig() {
 function useCarrinhoCount(cliente) {
   const [carrinhoCount, setCarrinhoCount] = useState(0);
 
-  const calcularCarrinhoCount = () => {
+  const calcularCarrinhoCount = useCallback(() => {
     if (cliente && cliente.id) {
       // Carregar carrinho do usuário logado
       const carrinhoSalvo = localStorage.getItem(`carrinho_usuario_${cliente.id}`);
@@ -64,11 +65,11 @@ function useCarrinhoCount(cliente) {
         setCarrinhoCount(0);
       }
     }
-  };
+  }, [cliente]);
 
   useEffect(() => {
     calcularCarrinhoCount();
-  }, [cliente]);
+  }, [calcularCarrinhoCount]);
 
   useEffect(() => {
     // Listener para mudanças no localStorage
@@ -108,7 +109,7 @@ function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [admin, setAdmin] = useState(() => {
     const adm = localStorage.getItem('admin');
-    console.log('🔍 Inicializando admin do localStorage:', adm);
+    logger.log('Inicializando admin', { isAdmin: adm === 'true' });
     return adm === 'true';
   });
   const [cliente, setCliente] = useState(() => {
@@ -123,20 +124,20 @@ function App() {
     // Verificar persistência dos dados ao carregar a aplicação
     const adminStored = localStorage.getItem('admin');
     const clienteStored = localStorage.getItem('cliente');
-    console.log('🔍 Verificando localStorage - admin:', adminStored, 'cliente existe:', !!clienteStored);
+    logger.log('Verificando localStorage', { hasAdmin: !!adminStored, hasCliente: !!clienteStored });
     
     if (adminStored === 'true' && !admin) {
-      console.log('🔥 Restaurando admin = true do localStorage');
+      logger.log('Restaurando admin do localStorage');
       setAdmin(true);
     }
     
     if (clienteStored && !cliente) {
       try {
         const clienteObj = JSON.parse(clienteStored);
-        console.log('👤 Restaurando cliente do localStorage:', clienteObj);
+        logger.log('Restaurando cliente do localStorage');
         setCliente(clienteObj);
       } catch (e) {
-        console.error('❌ Erro ao parsear cliente do localStorage:', e);
+        logger.error('Erro ao parsear cliente', e);
         localStorage.removeItem('cliente');
       }
     }
@@ -157,24 +158,87 @@ function App() {
   }, [cliente]);
 
   useEffect(() => {
-    console.log('🔥 useEffect admin disparado. Admin atual:', admin);
+    logger.log('useEffect admin disparado', { admin });
     if (admin) {
       localStorage.setItem('admin', 'true');
-      console.log('💾 Salvou admin = true no localStorage');
     } else {
       localStorage.removeItem('admin');
-      console.log('🗑️ Removeu admin do localStorage');
     }
   }, [admin]);
 
-  function handleLogout() {
+  const handleLogout = useCallback(() => {
     setAdmin(false);
     setCliente(null);
     setAba('home');
     localStorage.removeItem('admin');
     localStorage.removeItem('cliente');
     localStorage.removeItem('token');
-  }
+    localStorage.removeItem('usuarioId');
+    localStorage.removeItem('ultimaAtividade');
+  }, []);
+
+  // Sistema de logout automático por inatividade (60 minutos)
+  useEffect(() => {
+    const TEMPO_INATIVIDADE = 60 * 60 * 1000; // 60 minutos em milissegundos
+    let timeoutId;
+
+    // Função para atualizar o timestamp da última atividade
+    const atualizarAtividade = () => {
+      if (cliente || admin) {
+        localStorage.setItem('ultimaAtividade', Date.now().toString());
+      }
+    };
+
+    // Função para verificar inatividade
+    const verificarInatividade = () => {
+      const ultimaAtividade = localStorage.getItem('ultimaAtividade');
+      if (ultimaAtividade && (cliente || admin)) {
+        const tempoDecorrido = Date.now() - parseInt(ultimaAtividade);
+        if (tempoDecorrido >= TEMPO_INATIVIDADE) {
+          logger.warn('Sessão expirada por inatividade');
+          alert('Sua sessão expirou por inatividade (60 minutos). Faça login novamente.');
+          handleLogout();
+        }
+      }
+    };
+
+    // Eventos que resetam o timer de inatividade - Reduzido para mobile
+    const eventosAtividade = isMobile 
+      ? ['touchstart', 'touchmove', 'click'] // Apenas eventos touch no mobile
+      : ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+
+    const handleAtividade = () => {
+      atualizarAtividade();
+      // Limpar timeout anterior e criar novo
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(verificarInatividade, TEMPO_INATIVIDADE);
+    };
+
+    if (cliente || admin) {
+      // Inicializar última atividade
+      atualizarAtividade();
+      
+      // Adicionar listeners para eventos de atividade
+      eventosAtividade.forEach(evento => {
+        window.addEventListener(evento, handleAtividade, { passive: true });
+      });
+
+      // Iniciar verificação periódica (a cada 5 minutos)
+      const intervaloVerificacao = setInterval(verificarInatividade, 5 * 60 * 1000);
+
+      // Iniciar timer de inatividade
+      timeoutId = setTimeout(verificarInatividade, TEMPO_INATIVIDADE);
+
+      // Cleanup
+      return () => {
+        clearTimeout(timeoutId);
+        clearInterval(intervaloVerificacao);
+        eventosAtividade.forEach(evento => {
+          window.removeEventListener(evento, handleAtividade);
+        });
+      };
+    }
+  }, [cliente, admin]);
 
   // Assinatura sempre considerada válida
   const isAssinaturaValida = true;
@@ -386,8 +450,13 @@ function App() {
               </Link>
             )}
             <>
-              <Link to="/" className="aba" onClick={() => setMenuAberto(false)}>Início</Link>
-              <Link to="/produtos" className="aba" onClick={() => setMenuAberto(false)}>Loja</Link>
+              {/* Ocultar Início e Loja no mobile quando cliente logado (já estão no painel roxo) */}
+              {(!isMobile || !cliente || cliente.tipo === 'admin') && (
+                <>
+                  <Link to="/" className="aba" onClick={() => setMenuAberto(false)}>Início</Link>
+                  <Link to="/produtos" className="aba" onClick={() => setMenuAberto(false)}>Loja</Link>
+                </>
+              )}
               {admin && <Link to="/usuarios" className="aba" onClick={() => setMenuAberto(false)}>Usuários</Link>}
               {admin && (
                 <>
@@ -404,16 +473,259 @@ function App() {
               {/* {admin && <span className="aba sair" onClick={handleLogout}>Sair (Admin)</span>} */}
               {cliente && (
                 <>
-                  {cliente.tipo !== 'admin' && (
+                  {/* Painel mobile modernizado */}
+                  {isMobile && cliente.tipo !== 'admin' && (
+                    <div style={{
+                      width: '100%',
+                      maxWidth: '420px',
+                      margin: '12px auto',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      borderRadius: '20px',
+                      padding: '24px 20px',
+                      boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+                      border: '2px solid rgba(255, 255, 255, 0.2)'
+                    }}>
+                      {/* Header com código e pontos */}
+                      <div style={{
+                        display: 'flex',
+                        gap: '12px',
+                        marginBottom: '20px',
+                        justifyContent: 'center',
+                        flexWrap: 'wrap'
+                      }}>
+                        <div style={{
+                          background: 'rgba(255, 255, 255, 0.95)',
+                          padding: '12px 20px',
+                          borderRadius: '16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          border: '2px solid rgba(102, 126, 234, 0.2)'
+                        }}>
+                          <span style={{fontSize: '20px'}}>🎫</span>
+                          <div>
+                            <div style={{fontSize: '11px', color: '#718096', fontWeight: '600'}}>Código</div>
+                            <div style={{fontSize: '18px', fontWeight: '800', color: '#2d3748'}}>{cliente.id}</div>
+                          </div>
+                        </div>
+                        
+                        <div style={{
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          padding: '12px 20px',
+                          borderRadius: '16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                          border: '2px solid rgba(255, 255, 255, 0.3)'
+                        }}>
+                          <span style={{fontSize: '20px'}}>⭐</span>
+                          <div>
+                            <div style={{fontSize: '11px', color: 'rgba(255, 255, 255, 0.9)', fontWeight: '600'}}>Pontos</div>
+                            <div style={{fontSize: '18px', fontWeight: '800', color: '#ffffff'}}>{cliente.pontos ?? 0}</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Grid de botões de ação */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '12px',
+                        marginBottom: '12px'
+                      }}>
+                        <Link
+                          to="/"
+                          onClick={() => setMenuAberto(false)}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            padding: '18px 12px',
+                            borderRadius: '16px',
+                            textAlign: 'center',
+                            textDecoration: 'none',
+                            transition: 'all 0.3s ease',
+                            border: '2px solid rgba(102, 126, 234, 0.2)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}
+                        >
+                          <span style={{fontSize: '28px'}}>🏠</span>
+                          <span style={{fontSize: '14px', fontWeight: '700', color: '#2d3748'}}>Início</span>
+                        </Link>
+                        
+                        <Link
+                          to="/produtos"
+                          onClick={() => setMenuAberto(false)}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            padding: '18px 12px',
+                            borderRadius: '16px',
+                            textAlign: 'center',
+                            textDecoration: 'none',
+                            transition: 'all 0.3s ease',
+                            border: '2px solid rgba(102, 126, 234, 0.2)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}
+                        >
+                          <span style={{fontSize: '28px'}}>🛍️</span>
+                          <span style={{fontSize: '14px', fontWeight: '700', color: '#2d3748'}}>Loja</span>
+                        </Link>
+                        
+                        <Link
+                          to="/perfil"
+                          onClick={() => setMenuAberto(false)}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            padding: '18px 12px',
+                            borderRadius: '16px',
+                            textAlign: 'center',
+                            textDecoration: 'none',
+                            transition: 'all 0.3s ease',
+                            border: '2px solid rgba(102, 126, 234, 0.2)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}
+                        >
+                          <span style={{fontSize: '28px'}}>👤</span>
+                          <span style={{fontSize: '14px', fontWeight: '700', color: '#2d3748'}}>Perfil</span>
+                        </Link>
+                        
+                        <Link
+                          to="/carrinho"
+                          onClick={() => setMenuAberto(false)}
+                          style={{
+                            background: 'linear-gradient(135deg, #FF6B35 0%, #f44336 100%)',
+                            padding: '18px 12px',
+                            borderRadius: '16px',
+                            textAlign: 'center',
+                            textDecoration: 'none',
+                            transition: 'all 0.3s ease',
+                            border: '2px solid rgba(255, 255, 255, 0.3)',
+                            boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '8px',
+                            position: 'relative'
+                          }}
+                        >
+                          <span style={{fontSize: '28px'}}>🛒</span>
+                          <span style={{fontSize: '14px', fontWeight: '700', color: '#ffffff'}}>Carrinho</span>
+                          {carrinhoCount > 0 && (
+                            <span style={{
+                              position: 'absolute',
+                              top: '8px',
+                              right: '8px',
+                              background: '#e53e3e',
+                              color: '#fff',
+                              borderRadius: '50%',
+                              width: '24px',
+                              height: '24px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: '800',
+                              border: '2px solid #fff',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                            }}>
+                              {carrinhoCount > 99 ? '99+' : carrinhoCount}
+                            </span>
+                          )}
+                        </Link>
+                      </div>
+                      
+                      {/* Botão Meus Pedidos full width */}
+                      <Link
+                        to="/meus-pedidos"
+                        onClick={() => setMenuAberto(false)}
+                        style={{
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          padding: '18px 16px',
+                          borderRadius: '16px',
+                          textAlign: 'center',
+                          textDecoration: 'none',
+                          transition: 'all 0.3s ease',
+                          border: '2px solid rgba(255, 255, 255, 0.3)',
+                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '12px',
+                          fontWeight: '700',
+                          fontSize: '15px',
+                          color: '#ffffff'
+                        }}
+                      >
+                        <span style={{fontSize: '24px'}}>📦</span>
+                        Meus Pedidos
+                      </Link>
+                      
+                      {/* Botão Sair da Conta */}
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setMenuAberto(false);
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                          padding: '18px 16px',
+                          borderRadius: '16px',
+                          textAlign: 'center',
+                          border: '2px solid rgba(255, 255, 255, 0.3)',
+                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '12px',
+                          fontWeight: '700',
+                          fontSize: '15px',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          marginTop: '8px'
+                        }}
+                        onMouseDown={(e) => {
+                          e.currentTarget.style.transform = 'scale(0.95)';
+                        }}
+                        onMouseUp={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      >
+                        <span style={{fontSize: '24px'}}>🚪</span>
+                        Sair da Conta
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Versão desktop mantém original */}
+                  {!isMobile && cliente.tipo !== 'admin' && (
                     <>
                       <span style={{color:'#2d3a4b',fontWeight:'bold',marginRight:8,background:'#e9ecf3',padding:'6px 14px',borderRadius:8,fontSize:14,verticalAlign:'middle'}}>Código: {cliente.id}</span>
                       <span style={{color:'#fff',background:'#2d8a4b',fontWeight:'bold',marginRight:16,padding:'6px 14px',borderRadius:8,fontSize:14,verticalAlign:'middle'}}>Pontos: {cliente.pontos ?? 0}</span>
                     </>
                   )}
-                  <div style={{display:'inline-block',marginRight:8}}>
-                    <PerfilDropdown onLogout={handleLogout} />
-                  </div>
-                  {cliente.tipo !== 'admin' && (
+                  {/* PerfilDropdown apenas no desktop ou para admin */}
+                  {(!isMobile || cliente.tipo === 'admin') && (
+                    <div style={{display:'inline-block',marginRight:8}}>
+                      <PerfilDropdown onLogout={handleLogout} />
+                    </div>
+                  )}
+                  {!isMobile && cliente.tipo !== 'admin' && (
                     <>
                       <Link to="/carrinho" className="aba aba-carrinho" onClick={() => setMenuAberto(false)} style={{background:'#FF6B35',color:'#fff',marginRight:8,fontWeight:'bold',boxShadow:'0 2px 8px #ff6b3533',border:'2px solid #FF6B35', position: 'relative'}}>
                         🛒 Carrinho
@@ -477,6 +789,10 @@ function App() {
             {/* Rota antiga para compatibilidade, pode ser removida depois */}
             {cliente && cliente.tipo !== 'admin' && (
               <Route path="/meus-pedidos" element={<MeusResgates cliente={cliente} empresaConfig={empresaConfig} />} />
+            )}
+            {/* Rota para meus-resgates (alias de meus-pedidos) */}
+            {cliente && cliente.tipo !== 'admin' && (
+              <Route path="/meus-resgates" element={<MeusResgates cliente={cliente} empresaConfig={empresaConfig} />} />
             )}
             {admin && (
               <Route path="/resgates" element={<ResgatesAdmin />} />

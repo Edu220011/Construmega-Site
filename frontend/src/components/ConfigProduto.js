@@ -13,6 +13,8 @@ function ConfigProduto() {
   const [aba, setAba] = useState('criar');
   const [showBarcode, setShowBarcode] = useState(false);
   const [produtos, setProdutos] = useState([]);
+  const [produtosFiltrados, setProdutosFiltrados] = useState([]);
+  const [filtroMoeda, setFiltroMoeda] = useState('todos');
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -27,9 +29,21 @@ function ConfigProduto() {
   useEffect(() => {
     fetch('/api/produtos')
       .then(res => res.json())
-      .then(data => setProdutos(data))
+      .then(data => {
+        setProdutos(data);
+        setProdutosFiltrados(data);
+      })
       .catch(err => console.error('Erro ao carregar produtos:', err));
   }, []);
+
+  // Aplicar filtro de moeda
+  useEffect(() => {
+    if (filtroMoeda === 'todos') {
+      setProdutosFiltrados(produtos);
+    } else {
+      setProdutosFiltrados(produtos.filter(p => p.moeda === filtroMoeda));
+    }
+  }, [filtroMoeda, produtos]);
 
   return (
     <div style={{maxWidth:1200,margin:'40px auto',background:'#fff',borderRadius:16,boxShadow:'0 2px 12px #0002',padding:32}}>
@@ -762,8 +776,8 @@ function ConfigProduto() {
                     alignItems: 'center',
                     gap: 8
                   }}>
-                    <span>🔥</span>
-                    <span>{produtos.filter(p => p.promo).length}/10 Promoções</span>
+                    <span>🏠</span>
+                    <span>{produtos.filter(p => p.promo).length}/10 na Home</span>
                   </div>
                 </div>
               </div>
@@ -778,10 +792,11 @@ function ConfigProduto() {
               boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
               border: '1px solid rgba(102, 126, 234, 0.1)'
             }}>
+              {/* Campo de pesquisa */}
               <div style={{
                 position: 'relative',
                 maxWidth: 500,
-                margin: '0 auto'
+                margin: '0 auto 16px auto'
               }}>
                 <div style={{
                   position: 'absolute',
@@ -820,30 +835,96 @@ function ConfigProduto() {
                     const v = e.target.value.toLowerCase();
                     fetch('/api/produtos')
                       .then(res => res.json())
-                      .then(data => setProdutos(data.filter(p =>
-                        p.nome.toLowerCase().includes(v) || (p.codigoBarras||'').includes(v)
-                      )));
+                      .then(data => {
+                        const filtrados = data.filter(p =>
+                          p.nome.toLowerCase().includes(v) || (p.codigoBarras||'').includes(v)
+                        );
+                        setProdutos(filtrados);
+                      });
                   }}
                 />
+              </div>
+              
+              {/* Filtros de moeda */}
+              <div style={{
+                display: 'flex',
+                gap: 12,
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
+                <button
+                  onClick={() => setFiltroMoeda('todos')}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: 10,
+                    border: '2px solid',
+                    borderColor: filtroMoeda === 'todos' ? '#667eea' : 'rgba(102, 126, 234, 0.2)',
+                    background: filtroMoeda === 'todos' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#fff',
+                    color: filtroMoeda === 'todos' ? '#fff' : '#6b7280',
+                    fontSize: '0.85rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: filtroMoeda === 'todos' ? '0 4px 12px rgba(102, 126, 234, 0.3)' : 'none'
+                  }}
+                >
+                  🌐 Todos
+                </button>
+                <button
+                  onClick={() => setFiltroMoeda('real')}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: 10,
+                    border: '2px solid',
+                    borderColor: filtroMoeda === 'real' ? '#10b981' : 'rgba(16, 185, 129, 0.2)',
+                    background: filtroMoeda === 'real' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : '#fff',
+                    color: filtroMoeda === 'real' ? '#fff' : '#6b7280',
+                    fontSize: '0.85rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: filtroMoeda === 'real' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none'
+                  }}
+                >
+                  💰 Real (R$)
+                </button>
+                <button
+                  onClick={() => setFiltroMoeda('pontos')}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: 10,
+                    border: '2px solid',
+                    borderColor: filtroMoeda === 'pontos' ? '#f59e0b' : 'rgba(245, 158, 11, 0.2)',
+                    background: filtroMoeda === 'pontos' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : '#fff',
+                    color: filtroMoeda === 'pontos' ? '#fff' : '#6b7280',
+                    fontSize: '0.85rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: filtroMoeda === 'pontos' ? '0 4px 12px rgba(245, 158, 11, 0.3)' : 'none'
+                  }}
+                >
+                  🎯 Pontos
+                </button>
               </div>
             </div>
             {/* Grid de produtos moderno */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-              gap: 28,
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: 20,
               padding: '0 4px'
             }}>
-              {produtos.map(prod =>
+              {produtosFiltrados.map(prod =>
                 <div key={prod.id} className="produto-card" style={{
                   background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
-                  borderRadius: 20,
+                  borderRadius: 16,
                   padding: 0,
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                  boxShadow: '0 6px 24px rgba(0, 0, 0, 0.08)',
                   border: '2px solid rgba(102, 126, 234, 0.1)',
                   position: 'relative',
                   overflow: 'hidden',
-                  minHeight: '420px',
+                  minHeight: '320px',
                   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   cursor: 'pointer'
                 }} onClick={(e) => {
@@ -874,23 +955,23 @@ function ConfigProduto() {
                   {/* Badge de status superior */}
                   <div style={{
                     position: 'absolute',
-                    top: 16,
-                    left: 16,
+                    top: 12,
+                    left: 12,
                     zIndex: 20,
                     display: 'flex',
-                    gap: 8
+                    gap: 6
                   }}>
                     {(() => {
                       const isInativo = prod.status === 'inativo' || prod.inativo === true;
                       return (
                         <span style={{
-                          padding: '6px 12px',
-                          borderRadius: 20,
+                          padding: '4px 10px',
+                          borderRadius: 16,
                           fontWeight: '700',
-                          fontSize: '0.75rem',
+                          fontSize: '0.7rem',
                           background: isInativo ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                           color: '#fff',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                          boxShadow: '0 3px 10px rgba(0, 0, 0, 0.15)',
                           textTransform: 'uppercase',
                           letterSpacing: '0.5px'
                         }}>
@@ -900,13 +981,13 @@ function ConfigProduto() {
                     })()}
                     
                     <span style={{
-                      padding: '6px 12px',
-                      borderRadius: 20,
+                      padding: '4px 10px',
+                      borderRadius: 16,
                       fontWeight: '700',
-                      fontSize: '0.75rem',
+                      fontSize: '0.7rem',
                       background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                       color: '#fff',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                      boxShadow: '0 3px 10px rgba(0, 0, 0, 0.15)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px'
                     }}>
@@ -914,52 +995,59 @@ function ConfigProduto() {
                     </span>
                   </div>
 
-                  {/* Badge de promoção */}
+                  {/* Badge de exibição na página inicial */}
                   <div style={{
                     position: 'absolute',
-                    top: 16,
-                    right: 16,
+                    top: 12,
+                    right: 12,
                     zIndex: 20
                   }}>
-                    <label style={{
+                    <label 
+                      title={prod.promo ? "Exibindo na página inicial" : "Clique para exibir na página inicial"}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
                       display: 'flex',
                       alignItems: 'center',
-                      background: prod.promo ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                      background: prod.promo ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
                       color: prod.promo ? '#fff' : '#6b7280',
-                      padding: '8px 14px',
-                      borderRadius: 20,
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-                      fontSize: '0.8rem',
+                      padding: '6px 12px',
+                      borderRadius: 16,
+                      cursor: !prod.promo && produtos.filter(p => p.promo).length >= 10 ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 3px 12px rgba(0, 0, 0, 0.1)',
+                      fontSize: '0.75rem',
                       fontWeight: '700',
                       border: prod.promo ? 'none' : '2px solid rgba(102, 126, 234, 0.2)',
-                      transition: 'all 0.3s ease'
+                      transition: 'all 0.3s ease',
+                      opacity: !prod.promo && produtos.filter(p => p.promo).length >= 10 ? 0.5 : 1
                     }}>
                       <input
                         type="checkbox"
                         checked={!!prod.promo}
                         disabled={!prod.promo && produtos.filter(p => p.promo).length >= 10}
                         onChange={async e => {
+                          e.stopPropagation();
                           const novoValor = e.target.checked;
-                          await fetch(`/produtos/${prod.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ promo: novoValor })
-                          });
-                          setProdutos(produtos.map(p => p.id === prod.id ? { ...p, promo: novoValor } : p));
+                          if (!novoValor || produtos.filter(p => p.promo).length < 10) {
+                            await fetch(`/api/produtos/${prod.id}`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ promo: novoValor })
+                            });
+                            setProdutos(produtos.map(p => p.id === prod.id ? { ...p, promo: novoValor } : p));
+                          }
                         }}
-                        style={{marginRight: 6, transform: 'scale(0.9)'}}
+                        style={{marginRight: 5, transform: 'scale(0.85)'}}
                       />
                       <span>
-                        {prod.promo ? '🔥 Promoção' : '⭐ Promoção'}
+                        {prod.promo ? '🏠 Na Home' : '📌 Exibir'}
                       </span>
                     </label>
                   </div>
 
                   {/* Conteúdo Principal do Card */}
                   <div style={{
-                    padding: '24px 20px 20px 20px',
-                    height: 'calc(100% - 80px)',
+                    padding: '18px 16px 16px 16px',
+                    height: 'calc(100% - 60px)',
                     display: 'flex',
                     flexDirection: 'column'
                   }}>
@@ -967,21 +1055,21 @@ function ConfigProduto() {
                       // MODO DE EDIÇÃO MODERNIZADO
                       <div style={{
                         background: 'rgba(102, 126, 234, 0.03)',
-                        padding: '20px',
-                        borderRadius: 16,
+                        padding: '14px',
+                        borderRadius: 12,
                         border: '2px solid rgba(102, 126, 234, 0.1)',
-                        marginTop: 40
+                        marginTop: 35
                       }}>
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 12,
-                          marginBottom: 20,
-                          padding: '12px 16px',
+                          gap: 10,
+                          marginBottom: 14,
+                          padding: '10px 14px',
                           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                           color: '#fff',
-                          borderRadius: 12,
-                          fontSize: '0.95rem',
+                          borderRadius: 10,
+                          fontSize: '0.9rem',
                           fontWeight: '700'
                         }}>
                           ✏️ Editando Produto
@@ -1011,7 +1099,7 @@ function ConfigProduto() {
                               params.delete('id');
                               navigate(location.pathname + (params.toString() ? '?' + params.toString() : ''), { replace: true });
                             });
-                        }} style={{display:'grid',gap:16}}>
+                        }} style={{display:'grid',gap:12}}>
                           
                           {/* Nome */}
                           <div>
@@ -1019,8 +1107,8 @@ function ConfigProduto() {
                               display: 'block',
                               fontWeight: '600',
                               color: '#4a5568',
-                              fontSize: '0.85rem',
-                              marginBottom: 6
+                              fontSize: '0.8rem',
+                              marginBottom: 5
                             }}>
                               Nome do Produto
                             </label>
@@ -1030,10 +1118,10 @@ function ConfigProduto() {
                               required 
                               style={{
                                 width: '100%',
-                                padding: '10px 14px',
+                                padding: '8px 12px',
                                 borderRadius: 8,
                                 border: '2px solid rgba(102, 126, 234, 0.2)',
-                                fontSize: '0.9rem',
+                                fontSize: '0.85rem',
                                 transition: 'all 0.3s ease',
                                 background: '#fff',
                                 color: '#2d3748',
@@ -1056,8 +1144,8 @@ function ConfigProduto() {
                               display: 'block',
                               fontWeight: '600',
                               color: '#4a5568',
-                              fontSize: '0.85rem',
-                              marginBottom: 6
+                              fontSize: '0.8rem',
+                              marginBottom: 5
                             }}>
                               Descrição
                             </label>
@@ -1068,10 +1156,10 @@ function ConfigProduto() {
                               rows={2}
                               style={{
                                 width: '100%',
-                                padding: '10px 14px',
+                                padding: '8px 12px',
                                 borderRadius: 8,
                                 border: '2px solid rgba(102, 126, 234, 0.2)',
-                                fontSize: '0.9rem',
+                                fontSize: '0.85rem',
                                 transition: 'all 0.3s ease',
                                 background: '#fff',
                                 color: '#2d3748',
@@ -1094,7 +1182,7 @@ function ConfigProduto() {
                           <div style={{
                             display: 'grid',
                             gridTemplateColumns: '1fr 1fr',
-                            gap: 12
+                            gap: 10
                           }}>
                             {/* Unidade */}
                             <div>
@@ -1102,8 +1190,8 @@ function ConfigProduto() {
                                 display: 'block',
                                 fontWeight: '600',
                                 color: '#4a5568',
-                                fontSize: '0.85rem',
-                                marginBottom: 6
+                                fontSize: '0.8rem',
+                                marginBottom: 5
                               }}>
                                 Unidade
                               </label>
@@ -1113,10 +1201,10 @@ function ConfigProduto() {
                                 required 
                                 style={{
                                   width: '100%',
-                                  padding: '10px 14px',
+                                  padding: '8px 12px',
                                   borderRadius: 8,
                                   border: '2px solid rgba(76, 175, 80, 0.2)',
-                                  fontSize: '0.9rem',
+                                  fontSize: '0.85rem',
                                   transition: 'all 0.3s ease',
                                   background: '#fff',
                                   color: '#2d3748',
@@ -1139,8 +1227,8 @@ function ConfigProduto() {
                                 display: 'block',
                                 fontWeight: '600',
                                 color: '#4a5568',
-                                fontSize: '0.85rem',
-                                marginBottom: 6
+                                fontSize: '0.8rem',
+                                marginBottom: 5
                               }}>
                                 Moeda
                               </label>
@@ -1150,10 +1238,10 @@ function ConfigProduto() {
                                 required
                                 style={{
                                   width: '100%',
-                                  padding: '10px 14px',
+                                  padding: '8px 12px',
                                   borderRadius: 8,
                                   border: '2px solid rgba(76, 175, 80, 0.2)',
-                                  fontSize: '0.9rem',
+                                  fontSize: '0.85rem',
                                   background: '#fff',
                                   color: '#2d3748',
                                   cursor: 'pointer',
@@ -1178,7 +1266,7 @@ function ConfigProduto() {
                           <div style={{
                             display: 'grid',
                             gridTemplateColumns: '1fr 1fr',
-                            gap: 12
+                            gap: 10
                           }}>
                             {/* Preço */}
                             <div>
@@ -1186,8 +1274,8 @@ function ConfigProduto() {
                                 display: 'block',
                                 fontWeight: '600',
                                 color: '#4a5568',
-                                fontSize: '0.85rem',
-                                marginBottom: 6
+                                fontSize: '0.8rem',
+                                marginBottom: 5
                               }}>
                                 Preço
                               </label>
@@ -1199,10 +1287,10 @@ function ConfigProduto() {
                                 step="0.01"
                                 style={{
                                   width: '100%',
-                                  padding: '10px 14px',
+                                  padding: '8px 12px',
                                   borderRadius: 8,
                                   border: '2px solid rgba(255, 152, 0, 0.2)',
-                                  fontSize: '0.9rem',
+                                  fontSize: '0.85rem',
                                   transition: 'all 0.3s ease',
                                   background: '#fff',
                                   color: '#2d3748',
@@ -1225,8 +1313,8 @@ function ConfigProduto() {
                                 display: 'block',
                                 fontWeight: '600',
                                 color: '#4a5568',
-                                fontSize: '0.85rem',
-                                marginBottom: 6
+                                fontSize: '0.8rem',
+                                marginBottom: 5
                               }}>
                                 Estoque
                               </label>
@@ -1237,10 +1325,10 @@ function ConfigProduto() {
                                 type="number"
                                 style={{
                                   width: '100%',
-                                  padding: '10px 14px',
+                                  padding: '8px 12px',
                                   borderRadius: 8,
                                   border: '2px solid rgba(255, 152, 0, 0.2)',
-                                  fontSize: '0.9rem',
+                                  fontSize: '0.85rem',
                                   transition: 'all 0.3s ease',
                                   background: '#fff',
                                   color: '#2d3748',
@@ -1264,8 +1352,8 @@ function ConfigProduto() {
                               display: 'block',
                               fontWeight: '600',
                               color: '#4a5568',
-                              fontSize: '0.85rem',
-                              marginBottom: 6
+                              fontSize: '0.8rem',
+                              marginBottom: 5
                             }}>
                               Status do Produto
                             </label>
@@ -1284,10 +1372,10 @@ function ConfigProduto() {
                               required
                               style={{
                                 width: '100%',
-                                padding: '10px 14px',
+                                padding: '8px 12px',
                                 borderRadius: 8,
                                 border: '2px solid rgba(156, 39, 176, 0.2)',
-                                fontSize: '0.9rem',
+                                fontSize: '0.85rem',
                                 background: '#fff',
                                 color: '#2d3748',
                                 cursor: 'pointer',
@@ -1313,8 +1401,8 @@ function ConfigProduto() {
                               display: 'block',
                               fontWeight: '600',
                               color: '#4a5568',
-                              fontSize: '0.85rem',
-                              marginBottom: 6
+                              fontSize: '0.8rem',
+                              marginBottom: 5
                             }}>
                               Código de Barras
                             </label>
@@ -1324,10 +1412,10 @@ function ConfigProduto() {
                               placeholder="Opcional"
                               style={{
                                 width: '100%',
-                                padding: '10px 14px',
+                                padding: '8px 12px',
                                 borderRadius: 8,
                                 border: '2px solid rgba(107, 114, 128, 0.2)',
-                                fontSize: '0.9rem',
+                                fontSize: '0.85rem',
                                 transition: 'all 0.3s ease',
                                 background: '#fff',
                                 color: '#2d3748',
@@ -1345,19 +1433,19 @@ function ConfigProduto() {
                           </div>
                           
                           {/* Botões de ação */}
-                          <div style={{display:'flex',gap:12,marginTop:8}}>
+                          <div style={{display:'flex',gap:10,marginTop:6}}>
                             <button type="submit" style={{
                               flex: 1,
                               background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                               color: '#fff',
                               border: 'none',
                               borderRadius: 8,
-                              padding: '12px 20px',
-                              fontSize: '0.9rem',
+                              padding: '10px 16px',
+                              fontSize: '0.85rem',
                               fontWeight: '600',
                               cursor: 'pointer',
                               transition: 'all 0.3s ease',
-                              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)'
+                              boxShadow: '0 3px 12px rgba(16, 185, 129, 0.3)'
                             }}
                               onClick={async (e) => {
                                 // Se o campo estoque for alterado, atualize a lista após salvar
@@ -1390,7 +1478,7 @@ function ConfigProduto() {
                                 e.target.style.boxShadow = '0 4px 16px rgba(16, 185, 129, 0.3)';
                               }}
                             >
-                              💾 Salvar Alterações
+                              💾 Salvar
                             </button>
                             <button type="button" style={{
                               flex: 1,
@@ -1398,12 +1486,12 @@ function ConfigProduto() {
                               color: '#fff',
                               border: 'none',
                               borderRadius: 8,
-                              padding: '12px 20px',
-                              fontSize: '0.9rem',
+                              padding: '10px 16px',
+                              fontSize: '0.85rem',
                               fontWeight: '600',
                               cursor: 'pointer',
                               transition: 'all 0.3s ease',
-                              boxShadow: '0 4px 16px rgba(107, 114, 128, 0.3)'
+                              boxShadow: '0 3px 12px rgba(107, 114, 128, 0.3)'
                             }} onClick={()=>{
                               setEditId(null);
                               const params = new URLSearchParams(location.search);
@@ -1430,21 +1518,21 @@ function ConfigProduto() {
                         display:'flex',
                         flexDirection:'column',
                         height:'100%',
-                        paddingTop: 40
+                        paddingTop: 35
                       }}>
                         
                         {/* Imagem do Produto com efeito hover */}
                         <div style={{
                           width:'100%',
-                          height:'180px',
+                          height:'140px',
                           background:'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-                          borderRadius:16,
+                          borderRadius:12,
                           display:'flex',
                           alignItems:'center',
                           justifyContent:'center',
-                          marginBottom:20,
+                          marginBottom:14,
                           overflow:'hidden',
-                          border:'3px solid rgba(102, 126, 234, 0.1)',
+                          border:'2px solid rgba(102, 126, 234, 0.1)',
                           position: 'relative',
                           transition: 'all 0.3s ease'
                         }}>
@@ -1488,8 +1576,8 @@ function ConfigProduto() {
 
                         {/* Nome do Produto */}
                         <h3 style={{
-                          margin:'0 0 16px 0',
-                          fontSize:'1.2rem',
+                          margin:'0 0 12px 0',
+                          fontSize:'1.05rem',
                           fontWeight:'800',
                           color:'#1e293b',
                           lineHeight:'1.3',
@@ -1497,7 +1585,7 @@ function ConfigProduto() {
                           WebkitLineClamp:2,
                           WebkitBoxOrient:'vertical',
                           overflow:'hidden',
-                          minHeight: '60px'
+                          minHeight: '50px'
                         }}>{prod.nome}</h3>
 
                         {/* Preço em Destaque Modernizado */}
@@ -1506,13 +1594,13 @@ function ConfigProduto() {
                             ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' 
                             : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                           color:'white',
-                          padding:'14px 16px',
-                          borderRadius:12,
-                          marginBottom:16,
+                          padding:'10px 14px',
+                          borderRadius:10,
+                          marginBottom:12,
                           fontWeight:'800',
-                          fontSize:'1.1rem',
+                          fontSize:'1rem',
                           textAlign:'center',
-                          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
+                          boxShadow: '0 3px 12px rgba(0, 0, 0, 0.15)',
                           position: 'relative',
                           overflow: 'hidden'
                         }}>
@@ -1528,13 +1616,13 @@ function ConfigProduto() {
                           }} />
                           
                           {prod.moeda === 'pontos' ? (
-                            <span style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}>
-                              <span style={{fontSize: '1.2rem'}}>⭐</span>
+                            <span style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6}}>
+                              <span style={{fontSize: '1.1rem'}}>⭐</span>
                               {prod.preco} Pontos
                             </span>
                           ) : (
-                            <span style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}>
-                              <span style={{fontSize: '1.2rem'}}>💰</span>
+                            <span style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6}}>
+                              <span style={{fontSize: '1.1rem'}}>💰</span>
                               R$ {parseFloat(prod.preco).toFixed(2)}
                             </span>
                           )}
@@ -1544,30 +1632,30 @@ function ConfigProduto() {
                         <div style={{
                           display:'grid',
                           gridTemplateColumns:'1fr 1fr',
-                          gap:12,
-                          marginBottom:16
+                          gap:10,
+                          marginBottom:12
                         }}>
                           {/* Card Estoque */}
                           <div style={{
                             background: (prod.estoque === 0 || prod.estoque === '0') 
                               ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%)'
                               : 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)',
-                            padding:'12px',
-                            borderRadius:12,
+                            padding:'10px',
+                            borderRadius:10,
                             border: (prod.estoque === 0 || prod.estoque === '0') 
                               ? '2px solid rgba(239, 68, 68, 0.2)'
                               : '2px solid rgba(16, 185, 129, 0.2)',
                             textAlign: 'center'
                           }}>
                             <div style={{
-                              fontSize: '1.2rem',
-                              marginBottom: 4
+                              fontSize: '1.1rem',
+                              marginBottom: 3
                             }}>
                               {(prod.estoque === 0 || prod.estoque === '0') ? '📦' : '✅'}
                             </div>
                             <div style={{
                               fontWeight:'700',
-                              fontSize:'0.8rem',
+                              fontSize:'0.75rem',
                               color: (prod.estoque === 0 || prod.estoque === '0') ? '#ef4444' : '#059669',
                               marginBottom: 2
                             }}>
@@ -1575,7 +1663,7 @@ function ConfigProduto() {
                             </div>
                             <div style={{
                               fontWeight:'700',
-                              fontSize:'0.9rem',
+                              fontSize:'0.85rem',
                               color: (prod.estoque === 0 || prod.estoque === '0') ? '#ef4444' : '#374151'
                             }}>
                               {(prod.estoque === 0 || prod.estoque === '0') ? 'Esgotado' : prod.estoque}
@@ -1585,18 +1673,18 @@ function ConfigProduto() {
                           {/* Card Unidade */}
                           <div style={{
                             background:'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(79, 70, 229, 0.1) 100%)',
-                            padding:'12px',
-                            borderRadius:12,
+                            padding:'10px',
+                            borderRadius:10,
                             border:'2px solid rgba(99, 102, 241, 0.2)',
                             textAlign: 'center'
                           }}>
                             <div style={{
-                              fontSize: '1.2rem',
-                              marginBottom: 4
+                              fontSize: '1.1rem',
+                              marginBottom: 3
                             }}>📏</div>
                             <div style={{
                               fontWeight:'700',
-                              fontSize:'0.8rem',
+                              fontSize:'0.75rem',
                               color:'#6366f1',
                               marginBottom: 2
                             }}>
@@ -1604,7 +1692,7 @@ function ConfigProduto() {
                             </div>
                             <div style={{
                               fontWeight:'700',
-                              fontSize:'0.9rem',
+                              fontSize:'0.85rem',
                               color:'#374151'
                             }}>
                               {prod.unidade}
@@ -1616,17 +1704,17 @@ function ConfigProduto() {
                         {(prod.codigoBarras || prod.codigo_barra) && (
                           <div style={{
                             background:'linear-gradient(135deg, rgba(107, 114, 128, 0.08) 0%, rgba(75, 85, 99, 0.08) 100%)',
-                            padding:'12px',
-                            borderRadius:12,
-                            marginBottom:16,
+                            padding:'10px',
+                            borderRadius:10,
+                            marginBottom:12,
                             border:'2px solid rgba(107, 114, 128, 0.15)',
                             textAlign:'center'
                           }}>
                             <div style={{
                               fontWeight:'700',
-                              fontSize:'0.8rem',
+                              fontSize:'0.75rem',
                               color:'#6b7280',
-                              marginBottom: 6,
+                              marginBottom: 5,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',

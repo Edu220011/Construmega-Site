@@ -29,19 +29,24 @@ function PainelCompraProduto({ produto, onTrocar, pontosUsuario, isVendaReal = f
       return;
     }
 
-    // Adicionar ao carrinho do usuário
-    const itemCarrinho = {
-      id: produto.id,
-      nome: produto.nome,
-      preco: Number(produto.preco),
-      quantidade: quantidade,
-      imagem: produto.imagem
-    };
+    // Se for venda real (R$), adicionar ao carrinho
+    if (isVendaReal) {
+      const itemCarrinho = {
+        id: produto.id,
+        nome: produto.nome,
+        preco: Number(produto.preco),
+        quantidade: quantidade,
+        imagem: produto.imagem
+      };
 
-    // Usar função utilitária para adicionar ao carrinho do usuário
-    adicionarItemCarrinhoUsuario(cliente.id, itemCarrinho);
-
-    alert(`${quantidade} unidade(s) de ${produto.nome} adicionada(s) ao carrinho!`);
+      adicionarItemCarrinhoUsuario(cliente.id, itemCarrinho);
+      alert(`${quantidade} unidade(s) de ${produto.nome} adicionada(s) ao carrinho!`);
+    } else {
+      // Se for resgate por pontos, chamar função de troca direta
+      if (onTrocar) {
+        onTrocar(quantidade);
+      }
+    }
   };
   return (
     <>

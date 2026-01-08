@@ -1,4 +1,18 @@
 
+/* Otimizações de performance para mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Hardware acceleration para elementos que se movem */
+.produto-card, .aba, .perfil-dropdown-btn, button {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
 /* Estilo para destacar a aba Meus Resgates */
  .aba {
   display: inline-block;
@@ -9,7 +23,7 @@
   font-weight: 600;
   text-decoration: none;
   font-size: 0.89rem;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
   cursor: pointer;
 }
 .aba:hover {
@@ -45,7 +59,7 @@
   backdrop-filter: blur(20px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   text-align: center;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
   position: relative;
   min-height: 380px;
   display: flex;
@@ -424,8 +438,10 @@
   .abas-menu-direita {
     display: none;
     flex-direction: column;
+    align-items: center;
     gap: 8px;
     margin-top: 8px;
+    width: 100%;
   }
   .abas-menu-direita.menu-aberto {
     display: flex;

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PerfilDropdown.css';
 
-function PerfilDropdown({ onLogout }) {
+const PerfilDropdown = memo(function PerfilDropdown({ onLogout }) {
   const navigate = useNavigate();
   return (
     <div className="perfil-dropdown-wrap">
@@ -13,6 +13,6 @@ function PerfilDropdown({ onLogout }) {
       </div>
     </div>
   );
-}
+});
 
 export default PerfilDropdown;

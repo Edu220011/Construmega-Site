@@ -1,30 +1,20 @@
-console.log('=== INÍCIO DO ARQUIVO INDEX.JS - VERSÃO SEM MIDDLEWARES ESTÁTICOS ===');
 const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
 const cors = require('cors');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const logger = require('./logger');
 require('dotenv').config();
 
-// Verificar se o token foi carregado
-console.log('MP_ACCESS_TOKEN carregado:', !!process.env.MP_ACCESS_TOKEN);
-console.log('MP_ACCESS_TOKEN valor (primeiros 10 chars):', process.env.MP_ACCESS_TOKEN ? process.env.MP_ACCESS_TOKEN.substring(0, 10) + '...' : 'undefined');
+// Log de inicialização
+logger.info('Iniciando servidor backend');
+logger.info('Mercado Pago configurado', { configured: !!process.env.MP_ACCESS_TOKEN });
 
-// Função para logar em arquivo
+// Função para logar em arquivo (deprecated - usar logger)
 async function logToFile(message) {
-  try {
-    const logPath = path.join(__dirname, 'debug.log');
-    const timestamp = new Date().toISOString();
-    await fs.appendFile(logPath, `[${timestamp}] ${message}\n`);
-  } catch (err) {
-    console.error('Erro ao escrever log:', err);
-  }
+  logger.info(message);
 }
-
-console.log('Variáveis de ambiente carregadas:');
-console.log('MP_ACCESS_TOKEN:', process.env.MP_ACCESS_TOKEN ? 'DEFINIDO' : 'NÃO DEFINIDO');
-console.log('Valor completo:', process.env.MP_ACCESS_TOKEN);
 
 const app = express();
 // Middleware CORS deve vir antes de todas as rotas
@@ -35,7 +25,7 @@ app.use(express.urlencoded({limit: '50mb', extended: true}));
 
 // Middleware de log para todas as requisições
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  logger.info(`${req.method} ${req.url}`);
   next();
 });
 
@@ -46,20 +36,15 @@ let preferenceClient = null;
 let paymentClient = null;
 
 if (process.env.MP_ACCESS_TOKEN) {
-  console.log('Criando MercadoPagoConfig...');
+  logger.info('Inicializando Mercado Pago');
   mpClient = new MercadoPagoConfig({
     accessToken: process.env.MP_ACCESS_TOKEN
   });
-  console.log('mpClient criado:', !!mpClient);
-  console.log('Criando Preference client...');
   preferenceClient = new Preference(mpClient);
-  console.log('preferenceClient criado:', !!preferenceClient);
-  console.log('Criando Payment client...');
   paymentClient = new Payment(mpClient);
-  console.log('paymentClient criado:', !!paymentClient);
-  console.log('Mercado Pago configurado com access token.');
+  logger.info('Mercado Pago inicializado com sucesso');
 } else {
-  console.warn('MP_ACCESS_TOKEN não definido. Funcionalidades de pagamento estarão desabilitadas.');
+  logger.warn('MP_ACCESS_TOKEN não definido. Funcionalidades de pagamento desabilitadas.');
 }
 
 // Rota de login
@@ -88,16 +73,24 @@ app.post('/login', async (req, res) => {
 
     // Verificar usuários normais
     const usuarios = await readJson('usuarios.json');
-    const usuario = usuarios.find(u => (u.email === email || u.cpf === email));
-
-    if (!usuario || !(await bcrypt.compare(senha, usuario.senha))) {
+    const usuarioIndex = usuarios.findIndex(u => (u.email === email || u.cpf === email));
+    
+    if (usuarioIndex === -1) {
+      return res.status(401).json({ erro: 'Credenciais inválidas' });
+    }
+    
+    const usuario = usuarios[usuarioIndex];
+    
+    if (!(await bcrypt.compare(senha, usuario.senha))) {
       return res.status(401).json({ erro: 'Credenciais inválidas' });
     }
 
     // Gerar novo token e invalidar sessões anteriores
     const token = gerarToken();
-    usuario.tokenAtual = token;
+    usuarios[usuarioIndex].tokenAtual = token; // Atualizar no array, não no objeto
     await writeJson('usuarios.json', usuarios);
+    
+    logger.info('Login bem-sucedido', { usuarioId: usuario.id });
 
     res.json({
       sucesso: true,
@@ -123,7 +116,7 @@ app.post('/login', async (req, res) => {
 console.log('✅ Rota /login registrada');
 
 // Adicionar pontos ao usuário
-app.post('/usuarios/:id/pontos', async (req, res) => {
+app.post('/usuarios/:id/pontos', autenticarToken, async (req, res) => {
   try {
     console.log('Recebido body:', req.body);
     const pontos = req.body && req.body.pontos;
@@ -245,7 +238,7 @@ app.post('/chave/validar', express.json(), (req, res) => {
 
 
 // Resetar senha do usuário (admin)
-app.put('/usuarios/:id/senha', async (req, res) => {
+app.put('/usuarios/:id/senha', autenticarToken, async (req, res) => {
   const { senha } = req.body;
   if (!senha) return res.status(400).json({ erro: 'Senha obrigatória.' });
   let usuarios = await readJson('usuarios.json');
@@ -257,7 +250,7 @@ app.put('/usuarios/:id/senha', async (req, res) => {
 });
 
 // Alterar senha do próprio usuário (cliente)
-app.put('/usuarios/:id/alterar-senha', async (req, res) => {
+app.put('/usuarios/:id/alterar-senha', autenticarToken, async (req, res) => {
   const { senhaAtual, novaSenha } = req.body;
   if (!senhaAtual || !novaSenha) {
     return res.status(400).json({ erro: 'Senha atual e nova senha são obrigatórias.' });
@@ -286,7 +279,7 @@ app.put('/usuarios/:id/alterar-senha', async (req, res) => {
 });
 
 // Editar usuário
-app.put('/usuarios/:id', async (req, res) => {
+app.put('/usuarios/:id', autenticarToken, async (req, res) => {
   let usuarios = await readJson('usuarios.json');
   const idx = usuarios.findIndex(u => u.id == req.params.id);
   if (idx === -1) return res.status(404).json({ erro: 'Usuário não encontrado.' });
@@ -472,7 +465,7 @@ app.get('/pedidos', async (req, res) => {
   res.json(pedidos);
 });
 
-app.get('/pedidos/:usuarioId', autenticarToken, async (req, res) => {
+app.get('/pedidos/:usuarioId', async (req, res) => {
   try {
     console.log('Buscando pedidos para usuarioId:', req.params.usuarioId);
     const pedidos = await readJson('pedidos.json');
@@ -925,7 +918,7 @@ app.post('/pagamento/criar', async (req, res) => {
 console.log('✅ Rota /pagamento/criar registrada');
 
 // Endpoint para criar pagamento do carrinho
-app.post('/pagamento/criar-carrinho', async (req, res) => {
+app.post('/pagamento/criar-carrinho', autenticarToken, async (req, res) => {
   console.log('=== ROTA /pagamento/criar-carrinho CHAMADA ===');
   console.log('Timestamp:', new Date().toISOString());
   console.log('req.body:', JSON.stringify(req.body));
@@ -1181,28 +1174,25 @@ function gerarToken() {
 }
 
 // Middleware de autenticação
-function autenticarToken(req, res, next) {
+async function autenticarToken(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '');
-  console.log('Token recebido no header:', token ? 'PRESENTE' : 'AUSENTE');
-  console.log('Headers recebidos:', JSON.stringify(req.headers, null, 2));
+  logger.debug('Tentativa de autenticação', { hasToken: !!token });
 
   if (!token) {
-    console.log('ERRO: Token não fornecido');
+    logger.warn('Tentativa de acesso sem token');
     return res.status(401).json({ erro: 'Token não fornecido' });
   }
 
   // Verificar se o token é válido comparando com o último token do usuário
-  const usuarios = require('./usuarios.json'); // Carregar usuários (simplificado)
-  console.log('Procurando usuário com token:', token.substring(0, 10) + '...');
+  const usuarios = await readJson('usuarios.json'); // Carregar usuários de forma assíncrona
   const usuario = usuarios.find(u => u.tokenAtual === token);
 
   if (!usuario) {
-    console.log('ERRO: Token inválido ou expirado. Usuários encontrados:', usuarios.length);
-    console.log('Tokens dos usuários:', usuarios.map(u => ({ id: u.id, token: u.tokenAtual ? u.tokenAtual.substring(0, 10) + '...' : 'SEM TOKEN' })));
+    logger.warn('Token inválido ou expirado');
     return res.status(401).json({ erro: 'Token inválido ou expirado' });
   }
 
-  console.log('SUCESSO: Usuário autenticado:', usuario.id);
+  logger.info('Usuário autenticado', { usuarioId: usuario.id });
   req.usuario = usuario;
   next();
 }
@@ -1218,7 +1208,9 @@ async function limparPedidosExpirados() {
     let alterado = false;
 
     for (const pedido of pedidos) {
-      if (pedido.status === 'Pendente') {
+      // Apenas pedidos de venda expiram - resgates de pontos não têm tempo limite
+      // Pedidos sem tipo são considerados resgates (comprovantes antigos)
+      if (pedido.status === 'Pendente' && pedido.tipo === 'venda') {
         // Converter a data do pedido para Date
         const dataPedido = new Date(pedido.data.replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/, '$3-$2-$1T$4:$5:$6'));
         const diffMinutos = (agora - dataPedido) / (1000 * 60);
@@ -1226,7 +1218,7 @@ async function limparPedidosExpirados() {
         if (diffMinutos > 10) {
           pedido.status = 'Recusado';
           alterado = true;
-          console.log(`Pedido ${pedido.id} expirado após ${Math.floor(diffMinutos)} minutos, marcado como Recusado`);
+          console.log(`Pedido ${pedido.id} (venda) expirado após ${Math.floor(diffMinutos)} minutos, marcado como Recusado`);
         }
       }
     }

@@ -18,36 +18,32 @@ function MeusResgates({ cliente, empresaConfig }) {
     if (params.id && cliente && String(params.id) !== String(cliente.id)) {
       setErro("Acesso negado: você não pode visualizar pedidos de outro usuário.");
       setResgates([]);
-      // Opcional: redireciona para a página do próprio usuário
-      // navigate(`/meus-pedidos/${cliente.id}`, { replace: true });
       return;
     }
-    setErro("");
-    if (!usuarioId) return;
-    const token = localStorage.getItem('token');
-    console.log('Token no localStorage:', token ? 'EXISTE' : 'NÃO EXISTE');
-    console.log('Fazendo requisição para:', `/pedidos/${usuarioId}`);
-    fetch(`/pedidos/${usuarioId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
+    
+    if (!usuarioId) {
+      setErro("Você precisa estar logado para ver seus pedidos.");
+      return;
+    }
+    
+    setErro(""); // Limpar erro antes de fazer requisição
+    
+    fetch(`/pedidos/${usuarioId}`)
       .then(res => {
-        console.log('Resposta da API:', res.status, res.statusText);
-        if (res.status === 401) {
-          console.log('Erro 401 - Token inválido ou expirado');
-          setErro("Sessão expirada. Faça login novamente.");
-          return [];
+        if (!res.ok) {
+          throw new Error('Erro ao carregar pedidos');
         }
         return res.json();
       })
       .then(data => {
-        console.log('Dados recebidos:', data);
-        setResgates(data);
+        if (Array.isArray(data)) {
+          setResgates(data);
+          setErro(""); // Limpar erro se sucesso
+        }
       })
       .catch(err => {
         console.error('Erro na requisição:', err);
-        setErro("Erro ao carregar pedidos.");
+        setErro("Erro ao carregar pedidos. Tente novamente.");
       });
   }, [usuarioId, params.id, cliente]);
 

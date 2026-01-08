@@ -5,27 +5,27 @@
   100% { left: 100%; }
 }
 
-/* Animação para menu mobile */
+/* Animação para menu mobile - Otimizada com GPU */
 @keyframes fadeInDown {
   0% {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translate3d(0, -20px, 0);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
-/* Animação para mensagens */
+/* Animação para mensagens - Otimizada com GPU */
 @keyframes fadeInUp {
   0% {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translate3d(0, 20px, 0);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -47,10 +47,16 @@
   height: 4px;
   background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
   background-size: 200% 100%;
-  animation: gradient-shift 3s ease infinite;
   margin: 0 auto 24px auto;
   box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
   border-radius: 2px;
+}
+
+/* Animar gradiente apenas em desktop para melhor performance */
+@media (min-width: 768px) {
+  .linha-menu-destaque {
+    animation: gradient-shift 3s ease infinite;
+  }
 }
 /* Mostrar botões de ação do produto apenas ao passar o mouse */
 .produto-card:hover .produto-acoes {
