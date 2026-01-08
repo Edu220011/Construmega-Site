@@ -23,8 +23,14 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:3000',
-      'http://localhost:3000', // Desenvolvimento
-      'http://localhost:8080'  // Build local
+      'http://localhost:3000',
+      'http://localhost:8080',
+      'http://129.121.35.197',
+      'https://129.121.35.197',
+      'http://construmega.com.br',
+      'https://construmega.com.br',
+      'http://www.construmega.com.br',
+      'https://www.construmega.com.br'
     ];
     
     // Permite requisições sem origin (ex: Postman, curl) em desenvolvimento
