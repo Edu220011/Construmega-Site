@@ -17,7 +17,8 @@
     "start": "set NODE_OPTIONS=--no-deprecation && react-app-rewired start",
     "build": "set NODE_OPTIONS=--no-deprecation && react-app-rewired build",
     "test": "set NODE_OPTIONS=--no-deprecation && react-app-rewired test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "serve": "serve -s build -l 8080"
   },
   "proxy": "http://localhost:3001",
   "browserslist": {

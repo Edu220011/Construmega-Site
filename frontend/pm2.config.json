@@ -1,0 +1,6 @@
+{
+  "name": "frontend",
+  "scripts": {
+    "serve": "serve -s build -l 8080"
+  }
+}
