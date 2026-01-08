@@ -200,7 +200,13 @@ app.get('/configuracoes', async (req, res) => {
     logo: '',
     telefoneEmpresa: '',
     whatsappEmpresa: '',
+    tipoWhatsapp: 'numero',
     horarios: '',
+    endereco: '',
+    telaInicial: '',
+    avisoPromocoes: '',
+    pagamentoCartao: true,
+    pagamentoPix: true,
     ...config
   };
   res.json(config);

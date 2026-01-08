@@ -6,7 +6,7 @@ import { getApiUrl } from '../config/api';
 function ConfiguracaoGlobal({ admin, cliente }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [empresa, setEmpresa] = useState({ nomeEmpresa: '', cnpj: '', logo: '', telefoneEmpresa: '', whatsappEmpresa: '', tipoWhatsapp: 'numero', horarios: '', endereco: '', telaInicio: '', pagamentoCartao: true, pagamentoPix: true });
+  const [empresa, setEmpresa] = useState({ nomeEmpresa: '', cnpj: '', logo: '', telefoneEmpresa: '', whatsappEmpresa: '', tipoWhatsapp: 'numero', horarios: '', endereco: '', telaInicio: '', avisoPromocoes: '', pagamentoCartao: true, pagamentoPix: true });
   const [logoPreview, setLogoPreview] = useState('');
   const [msg, setMsg] = useState('');
   // Determina aba pelo path
@@ -20,7 +20,7 @@ function ConfiguracaoGlobal({ admin, cliente }) {
     fetch(getApiUrl('configuracoes'))
       .then(res => res.json())
       .then(data => {
-        setEmpresa(data ? { ...data, endereco: data.endereco || '', telaInicio: data.telaInicial || '', tipoWhatsapp: data.tipoWhatsapp || 'numero', pagamentoCartao: data.pagamentoCartao !== undefined ? data.pagamentoCartao : true, pagamentoPix: data.pagamentoPix !== undefined ? data.pagamentoPix : true } : { nomeEmpresa: '', cnpj: '', logo: '', telefoneEmpresa: '', whatsappEmpresa: '', tipoWhatsapp: 'numero', horarios: '', endereco: '', telaInicio: '', pagamentoCartao: true, pagamentoPix: true });
+        setEmpresa(data ? { ...data, endereco: data.endereco || '', telaInicio: data.telaInicial || '', avisoPromocoes: data.avisoPromocoes || '', tipoWhatsapp: data.tipoWhatsapp || 'numero', pagamentoCartao: data.pagamentoCartao !== undefined ? data.pagamentoCartao : true, pagamentoPix: data.pagamentoPix !== undefined ? data.pagamentoPix : true } : { nomeEmpresa: '', cnpj: '', logo: '', telefoneEmpresa: '', whatsappEmpresa: '', tipoWhatsapp: 'numero', horarios: '', endereco: '', telaInicio: '', avisoPromocoes: '', pagamentoCartao: true, pagamentoPix: true });
         if (data && data.logo) setLogoPreview(data.logo);
       });
   }, []);
@@ -751,6 +751,61 @@ function ConfiguracaoGlobal({ admin, cliente }) {
                       border: '2px solid rgba(102, 126, 234, 0.2)',
                       fontSize: '1rem',
                       minHeight: 120,
+                      resize: 'vertical',
+                      transition: 'all 0.3s ease',
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      color: '#2d3748',
+                      fontFamily: 'inherit'
+                    }} 
+                    disabled={!admin}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#667eea';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(102, 126, 234, 0.2)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </label>
+              </div>
+              {/* Campo Aviso de Promoções */}
+              <div style={{marginTop: 24, marginBottom: 24}}>
+                <h4 style={{
+                  marginBottom: 16,
+                  marginTop: 0,
+                  color: '#667eea',
+                  fontSize: '1.2rem',
+                  fontWeight: '700',
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8
+                }}>
+                  🎉 Aviso de Promoções
+                </h4>
+                <label style={{
+                  fontWeight: '600',
+                  color: '#4a5568',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                  width: '100%'
+                }}>
+                  Mensagem de Promoções:
+                  <textarea 
+                    name="avisoPromocoes" 
+                    value={empresa.avisoPromocoes || ''} 
+                    onChange={handleChange} 
+                    placeholder="🎉 Confira as promoções especiais disponíveis abaixo! Aproveite descontos e ofertas por tempo limitado." 
+                    rows={4} 
+                    style={{
+                      padding: '12px 16px',
+                      borderRadius: 12,
+                      border: '2px solid rgba(102, 126, 234, 0.2)',
+                      fontSize: '1rem',
+                      minHeight: 100,
                       resize: 'vertical',
                       transition: 'all 0.3s ease',
                       background: 'rgba(255, 255, 255, 0.9)',

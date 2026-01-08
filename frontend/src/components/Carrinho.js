@@ -9,7 +9,6 @@ import {
 import PixCheckout from './PixCheckout';
 import CreditCardCheckout from './CreditCardCheckout';
 import PaymentMethodModal from './PaymentMethodModal';
-import { getApiUrl } from '../config/api';
 
 function Carrinho({ cliente, setCliente }) {
   const [itens, setItens] = useState([]);
@@ -41,7 +40,7 @@ function Carrinho({ cliente, setCliente }) {
 
   useEffect(() => {
     // Carregar configurações de pagamento
-    fetch(getApiUrl('configuracoes'))
+    fetch('/configuracoes')
       .then(res => res.json())
       .then(data => {
         setConfiguracoes({
@@ -111,7 +110,7 @@ function Carrinho({ cliente, setCliente }) {
       
       console.log('🔍 Verificando estoque antes do pagamento...');
       // Verificar estoque atualizado antes do pagamento
-      const produtosAtualizados = await fetch(getApiUrl('api/produtos')).then(r => r.json());
+      const produtosAtualizados = await fetch('/api/produtos').then(r => r.json());
       console.log('Produtos atualizados:', produtosAtualizados);
 
       for (const item of itens) {
@@ -132,7 +131,7 @@ function Carrinho({ cliente, setCliente }) {
       }));
       console.log('Itens para pagamento:', itensParaPagamento);
 
-      const res = await fetch(getApiUrl('pagamento/criar-carrinho'), {
+      const res = await fetch('/pagamento/criar-carrinho', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

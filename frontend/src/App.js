@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import logger from './utils/logger';
+import { getApiUrl } from './config/api';
 import './App.css';
 import './components/BotoesPadrao.css';
 import Produtos from './components/Produtos';
@@ -32,7 +33,7 @@ import Carrinho from './components/Carrinho';
 function useEmpresaConfig() {
   const [empresa, setEmpresa] = useState(null);
   useEffect(() => {
-    fetch('/configuracoes')
+    fetch(getApiUrl('configuracoes'))
       .then(res => res.json())
       .then(data => setEmpresa(data));
   }, []);

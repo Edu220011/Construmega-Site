@@ -78,24 +78,27 @@ function HomePromocoes({ empresaConfig }) {
             }}>{empresaConfig.telaInicial}</span>
           </div>
           {/* Aviso do campo Promoções */}
-          <div style={{
-            maxWidth: 700,
-            margin: '32px auto 0',
-            background: 'linear-gradient(90deg, #e0e7ff 60%, #bfcfff 100%)',
-            borderRadius: 16,
-            boxShadow: '0 2px 12px #333e8c22',
-            padding: '18px 28px',
-            color: '#1a2540',
-            fontSize: 18,
-            fontWeight: 500,
-            textAlign: 'center',
-            border: '1.5px solid #333E8C',
-            letterSpacing: 0.2,
-            lineHeight: 1.5,
-            marginBottom: 18
-          }}>
-            <span role="img" aria-label="promo">🎉</span> Confira as promoções especiais disponíveis abaixo! Aproveite descontos e ofertas por tempo limitado.
-          </div>
+          {empresaConfig.avisoPromocoes && (
+            <div style={{
+              maxWidth: 700,
+              margin: '32px auto 0',
+              background: 'linear-gradient(90deg, #e0e7ff 60%, #bfcfff 100%)',
+              borderRadius: 16,
+              boxShadow: '0 2px 12px #333e8c22',
+              padding: '18px 28px',
+              color: '#1a2540',
+              fontSize: 18,
+              fontWeight: 500,
+              textAlign: 'center',
+              border: '1.5px solid #333E8C',
+              letterSpacing: 0.2,
+              lineHeight: 1.5,
+              marginBottom: 18,
+              whiteSpace: 'pre-line'
+            }}>
+              {empresaConfig.avisoPromocoes}
+            </div>
+          )}
         </>
       ) : (
         <>

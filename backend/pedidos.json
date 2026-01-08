@@ -110,5 +110,21 @@
     "data": "07/01/2026, 21:47:17",
     "status": "Recusado",
     "comprovante": "616066"
+  },
+  {
+    "id": "8",
+    "usuarioId": "913136",
+    "usuarioNome": "Teste Eduardo",
+    "produtoId": "2",
+    "produtoNome": "Teste",
+    "quantidade": 1,
+    "valorProduto": 1,
+    "localRetirada": "Av. Henrique Agostineto, 502A - Várzea, Caconde/SP.",
+    "pontos": 1,
+    "valor": 0,
+    "tipo": "resgate",
+    "data": "08/01/2026, 16:07:32",
+    "status": "Pendente",
+    "comprovante": "718067"
   }
 ]

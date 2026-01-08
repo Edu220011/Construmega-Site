@@ -8,7 +8,7 @@ function EditarUsuario({ tipoUsuarioLogado }) {
     async function handleDelete() {
       if (!window.confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) return;
       setMsg('Excluindo usuário...');
-      const res = await fetch(getApiUrl(`usuarios/${id}`), {
+      const res = await fetch(`/usuarios/${id}`, {
         method: 'DELETE',
       });
       if (res.ok) {
@@ -56,7 +56,7 @@ function EditarUsuario({ tipoUsuarioLogado }) {
   async function handleSave(e) {
     e.preventDefault();
     setMsg('Salvando...');
-    const res = await fetch(getApiUrl(`usuarios/${id}`), {
+    const res = await fetch(`/usuarios/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
@@ -83,7 +83,7 @@ function EditarUsuario({ tipoUsuarioLogado }) {
     setMsg('Resetando senha...');
     // Gera senha aleatória de 8 dígitos
     const novaSenha = senhaReset || Math.random().toString(36).slice(-8);
-    const res = await fetch(getApiUrl(`usuarios/${usuario.id}/senha`), {
+    const res = await fetch(`/usuarios/${usuario.id}/senha`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ senha: novaSenha })

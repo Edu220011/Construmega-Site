@@ -5,14 +5,14 @@
     "telefone": "(19) 99959-5231",
     "endereco": "Rua Alonso Leonel de Paiva 196",
     "email": "dudu.almeidakcond@gmail.com",
-    "senha": "$2b$10$uevGrQYuzFoqXNv3s.kIT.BlnlMTkJzXpAG61i8viWp742/FVwjV.",
+    "senha": "$2b$10$1rFhYtTF.x1UdF31pL9eIeCLPev0PqgSctce15n1K8EdNDlrqpShW",
     "tipo": "cliente",
     "id": "729485",
     "pontos": 54,
     "configuracoes": {
       "temaEscuro": false
     },
-    "tokenAtual": "23b8fe13ba0e702b84dea43331df7e57e264a90de13d3f7ccab201e85f56acfc",
+    "tokenAtual": "9ea06681c9ccfa32588d26079e0df616daa63495729b4d9d63b7e91c83d31ad1",
     "ativo": true
   },
   {
@@ -26,7 +26,7 @@
     "id": "486650",
     "ativo": true,
     "pontos": 5,
-    "tokenAtual": "0dd7cf7590f1b18b533c4bce31b9670ed3b4fca14b88b6a96a25f8508e87d985"
+    "tokenAtual": "b36f19d0ebf6a652571e53c76075936d7fe3bb056bd478fc06f8d83c3cc48e98"
   },
   {
     "nome": "Marcus Vinicius da Silva Goulart",
@@ -70,7 +70,18 @@
     "senha": "$2b$10$9PITQBCDdJEHoEF3jeMR8u1Zeps9Ie02PuZ2hsCS/w2fLUd5eMKyK",
     "tipo": "cliente",
     "id": "913136",
-    "pontos": 41,
-    "tokenAtual": "05823b9df3809a1cadfd0749ce94b00725454be3af348103294238fba35f64fe"
+    "pontos": 40,
+    "tokenAtual": "e76d31d9e2b4a171e5584c5e3d7f6dd1bdbf7dfa0d81e0074dc321341acc7994"
+  },
+  {
+    "nome": "a",
+    "cpf": "081.280.600-07",
+    "telefone": "(11) 11111-1111",
+    "endereco": "11aaaaaaaaaaaa",
+    "email": "aaaaaaaaa@aaaaaaa.com",
+    "senha": "$2b$10$ofBXiPN8yeHeinhKUcFOj.tnpVFuJ23fMyI76HrxzBaZB8JogXUP2",
+    "tipo": "cliente",
+    "id": "885895",
+    "pontos": 0
   }
 ]
