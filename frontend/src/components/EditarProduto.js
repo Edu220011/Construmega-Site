@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import CarrosselImagens from './CarrosselImagens';
 import { useParams, useNavigate } from 'react-router-dom';
 import BarcodeReader from './BarcodeReader';
+import { getApiUrl } from '../config/api';
 
 
 function EditarProduto() {

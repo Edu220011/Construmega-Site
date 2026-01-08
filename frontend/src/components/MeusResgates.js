@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ComprovanteCard from './ComprovanteCard';
+import { getApiUrl } from '../config/api';
 
 function MeusResgates({ cliente, empresaConfig }) {
   const [resgates, setResgates] = useState([]);

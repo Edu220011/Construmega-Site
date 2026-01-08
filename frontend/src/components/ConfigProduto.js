@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BarcodeReader from './BarcodeReader';
+import { getApiUrl } from '../config/api';
 
 function ConfigProduto() {
   const location = useLocation();
@@ -27,7 +28,7 @@ function ConfigProduto() {
 
   // Carregar produtos ao montar o componente
   useEffect(() => {
-    fetch('/api/produtos')
+    fetch(getApiUrl('api/produtos'))
       .then(res => res.json())
       .then(data => {
         setProdutos(data);
@@ -220,7 +221,7 @@ function ConfigProduto() {
                     imagens: fotoBase64 ? [fotoBase64] : []
                   };
                   try {
-                    const res = await fetch('/api/produtos', {
+                    const res = await fetch(getApiUrl('api/produtos'), {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(novoProduto)
@@ -833,7 +834,7 @@ function ConfigProduto() {
                   }}
                   onChange={e => {
                     const v = e.target.value.toLowerCase();
-                    fetch('/api/produtos')
+                    fetch(getApiUrl('api/produtos'))
                       .then(res => res.json())
                       .then(data => {
                         const filtrados = data.filter(p =>
@@ -1461,7 +1462,7 @@ function ConfigProduto() {
                                   body: JSON.stringify(payload)
                                 });
                                 // Recarrega produtos do backend para refletir estoque atualizado
-                                const res = await fetch('/api/produtos');
+                                const res = await fetch(getApiUrl('api/produtos'));
                                 const data = await res.json();
                                 setProdutos(data);
                                 setEditId(null);

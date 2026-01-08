@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logger from '../utils/logger';
+import { getApiUrl } from '../config/api';
 
 function Login({ setAdmin, setCliente, setAba }) {
   const [loginEmail, setLoginEmail] = useState('');
@@ -13,7 +14,7 @@ function Login({ setAdmin, setCliente, setAba }) {
     logger.log('Tentativa de login');
     
     // Fazer requisição para a nova rota de login
-    fetch('/login', {
+    fetch(getApiUrl('login'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

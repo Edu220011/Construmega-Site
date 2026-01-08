@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { adicionarItemCarrinhoUsuario } from '../utils/carrinhoUtils';
+import { getApiUrl } from '../config/api';
 
 function PainelCompraProduto({ produto, onTrocar, pontosUsuario, isVendaReal = false, cliente }) {
   const [quantidade, setQuantidade] = useState(1);

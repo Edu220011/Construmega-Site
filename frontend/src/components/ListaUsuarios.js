@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 function ListaUsuarios({ admin = false, cliente, setAdmin, setCliente }) {
   const [novoModal, setNovoModal] = useState(false);
@@ -70,7 +71,7 @@ function ListaUsuarios({ admin = false, cliente, setAdmin, setCliente }) {
       }
       // O campo tipo define a permissão: 'admin' ou 'cliente'
       const dados = { nome: novoForm.nome, cpf: novoForm.cpf, telefone: novoForm.telefone, endereco: novoForm.endereco, email: novoForm.email, senha: novoForm.senha, tipo: novoForm.tipo };
-      const res = await fetch('/usuarios', {
+      const res = await fetch(getApiUrl('usuarios'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dados)
@@ -79,7 +80,7 @@ function ListaUsuarios({ admin = false, cliente, setAdmin, setCliente }) {
         setNovoMsg('Usuário cadastrado com sucesso!');
         setNovoForm({ nome: '', cpf: '', telefone: '', endereco: '', email: '', senha: '', senha2: '', tipo: 'cliente' });
         setTimeout(()=>{ setNovoModal(false); setNovoMsg(''); }, 1200);
-        fetch('/usuarios').then(res=>res.json()).then(setUsuarios);
+        fetch(getApiUrl('usuarios')).then(res=>res.json()).then(setUsuarios);
       } else {
         setNovoMsg('Erro ao cadastrar. Tente outro email ou CPF.');
       }
@@ -114,7 +115,7 @@ function ListaUsuarios({ admin = false, cliente, setAdmin, setCliente }) {
   }, [detalhe, usuarios]);
 
   useEffect(() => {
-    fetch('/usuarios')
+    fetch(getApiUrl('usuarios'))
       .then(res => res.json())
       .then(setUsuarios);
   }, []);
@@ -1153,7 +1154,7 @@ function ListaUsuarios({ admin = false, cliente, setAdmin, setCliente }) {
             setMsg('Dados atualizados!');
             setEdit(false);
             // Atualiza lista e mantém painel aberto
-            fetch('/usuarios')
+            fetch(getApiUrl('usuarios'))
               .then(res => res.json())
               .then(novosUsuarios => {
                 setUsuarios(novosUsuarios);

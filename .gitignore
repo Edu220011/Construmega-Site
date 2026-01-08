@@ -32,6 +32,18 @@ Thumbs.db
 *.sqlite
 *.db
 
+# Sensitive data files (JSON with user data)
+backend/usuarios.json
+backend/pedidos.json
+backend/pontos.json
+backend/perfis.json
+backend/configuracoes.json
+backend/configproduto.json
+
+# Backend logs
+backend/logs/
+backend/*.log
+
 # Temporary files
 *.tmp
 *.temp

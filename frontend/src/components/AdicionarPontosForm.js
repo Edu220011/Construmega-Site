@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 function AdicionarPontosForm() {
     const navigate = useNavigate();
@@ -17,7 +18,7 @@ function AdicionarPontosForm() {
     if (!idBusca) return;
     setVerificando(true);
     try {
-      const res = await fetch('/usuarios');
+      const res = await fetch(getApiUrl('usuarios'));
       if (res.ok) {
         const lista = await res.json();
         const usuario = lista.find(u => u.id === idBusca);

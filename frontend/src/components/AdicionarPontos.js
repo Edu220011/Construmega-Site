@@ -13,7 +13,7 @@ function AdicionarPontos() {
     setMsg('');
     setUsuario(null);
     if (!id) return;
-    const res = await fetch('/usuarios');
+    const res = await fetch(getApiUrl('usuarios'));
     const lista = await res.json();
     const user = lista.find(u => String(u.id) === String(id));
     if (user) setUsuario(user);

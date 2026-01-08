@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import CarrosselImagens from './CarrosselImagens';
 import { useNavigate } from 'react-router-dom';
 import './HomePromocoes.css';
+import { getApiUrl } from '../config/api';
 
 function HomePromocoes({ empresaConfig }) {
   const [promos, setPromos] = useState([]);
   const navigate = useNavigate();
   useEffect(() => {
-    fetch('/api/produtos')
+    fetch(getApiUrl('api/produtos'))
       .then(res => res.json())
       .then(data => setPromos(data.filter(p => p.promo).slice(0, 10)));
   }, []);

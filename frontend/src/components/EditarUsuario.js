@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 function EditarUsuario({ tipoUsuarioLogado }) {
     // Função de exclusão de usuário
@@ -28,7 +29,7 @@ function EditarUsuario({ tipoUsuarioLogado }) {
 
   useEffect(() => {
     // Sempre buscar todos e filtrar pelo ID para garantir compatibilidade
-    fetch('/usuarios')
+    fetch(getApiUrl('usuarios'))
       .then(res => res.json())
       .then(lista => {
         const achado = lista.find(u => String(u.id) === String(id));

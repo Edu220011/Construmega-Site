@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getApiUrl } from '../config/api';
 
 function ResgatesAdmin() {
   const [resgates, setResgates] = useState([]);
@@ -29,7 +30,7 @@ function ResgatesAdmin() {
       setLoading(true);
       setErro('');
       try {
-        const res = await fetch('/pedidos');
+        const res = await fetch(getApiUrl('pedidos'));
         if (!res.ok) throw new Error('Erro ao buscar resgates');
         const data = await res.json();
         setResgates(data);

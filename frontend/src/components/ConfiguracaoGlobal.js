@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 
 function ConfiguracaoGlobal({ admin, cliente }) {
@@ -16,7 +17,7 @@ function ConfiguracaoGlobal({ admin, cliente }) {
 
   useEffect(() => {
     // Carregar dados da empresa ao abrir
-    fetch('/configuracoes')
+    fetch(getApiUrl('configuracoes'))
       .then(res => res.json())
       .then(data => {
         setEmpresa(data ? { ...data, endereco: data.endereco || '', telaInicio: data.telaInicial || '', tipoWhatsapp: data.tipoWhatsapp || 'numero', pagamentoCartao: data.pagamentoCartao !== undefined ? data.pagamentoCartao : true, pagamentoPix: data.pagamentoPix !== undefined ? data.pagamentoPix : true } : { nomeEmpresa: '', cnpj: '', logo: '', telefoneEmpresa: '', whatsappEmpresa: '', tipoWhatsapp: 'numero', horarios: '', endereco: '', telaInicio: '', pagamentoCartao: true, pagamentoPix: true });
@@ -77,7 +78,7 @@ function ConfiguracaoGlobal({ admin, cliente }) {
   async function handleSalvar(e) {
     e.preventDefault();
     setMsg('Salvando...');
-    const res = await fetch('/configuracoes', {
+    const res = await fetch(getApiUrl('configuracoes'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(empresa)
@@ -1030,7 +1031,7 @@ function ConfiguracaoGlobal({ admin, cliente }) {
                       }
                       try {
                         setMsg('🔄 Zerando pontos dos clientes...');
-                        const res = await fetch('/usuarios/zerar-pontos-clientes', {
+                        const res = await fetch(getApiUrl('usuarios/zerar-pontos-clientes'), {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' }
                         });
@@ -1102,7 +1103,7 @@ function AssinaturaPanel() {
     setGerando(true);
     setStatus('Gerando chave...');
     try {
-      const res = await fetch('/chave/gerar');
+      const res = await fetch(getApiUrl('chave/gerar'));
       const data = await res.json();
       setKey(data.chave);
       setStatus('Chave gerada! Clique em "Ativar" para validar.');
@@ -1117,7 +1118,7 @@ function AssinaturaPanel() {
     setValidando(true);
     setStatus('Validando chave...');
     try {
-      const res = await fetch('/chave/validar', {
+      const res = await fetch(getApiUrl('chave/validar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chave: key })

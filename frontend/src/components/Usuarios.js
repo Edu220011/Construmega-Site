@@ -1,11 +1,12 @@
 
 import React, { useEffect, useState } from 'react';
+import { getApiUrl } from '../config/api';
 
 // Hook para buscar dados da empresa (endereço e telefone)
 function useEmpresaConfig() {
   const [empresa, setEmpresa] = useState(null);
   useEffect(() => {
-    fetch('/configuracoes')
+    fetch(getApiUrl('configuracoes'))
       .then(res => res.json())
       .then(data => setEmpresa(data));
   }, []);
@@ -75,7 +76,7 @@ function Usuarios({ setCliente, setAdmin }) {
     }
     // Sempre registra como cliente
     const dados = { nome: form.nome, cpf: form.cpf, telefone: form.telefone, endereco: form.endereco, email: form.email, senha: form.senha, tipo: 'cliente' };
-    fetch('/usuarios', {
+    fetch(getApiUrl('usuarios'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dados)

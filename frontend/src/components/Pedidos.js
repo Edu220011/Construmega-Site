@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { getApiUrl } from '../config/api';
 
 function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
 
   useEffect(() => {
-    fetch('/pedidos')
+    fetch(getApiUrl('pedidos'))
       .then(res => res.json())
       .then(setPedidos);
   }, []);

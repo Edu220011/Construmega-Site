@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import CarrosselImagens from './CarrosselImagens';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../config/api';
 
 function LojaPontuacao() {
   const [produtos, setProdutos] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('/api/produtos')
+    fetch(getApiUrl('api/produtos'))
       .then(res => res.json())
       .then(setProdutos);
   }, []);

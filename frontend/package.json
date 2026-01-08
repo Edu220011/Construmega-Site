@@ -14,13 +14,12 @@
     "stream-browserify": "^3.0.0"
   },
   "scripts": {
-    "start": "set NODE_OPTIONS=--no-deprecation && react-app-rewired start",
-    "build": "set NODE_OPTIONS=--no-deprecation && react-app-rewired build",
-    "test": "set NODE_OPTIONS=--no-deprecation && react-app-rewired test",
+    "start": "export NODE_OPTIONS=--no-deprecation && react-app-rewired start",
+    "build": "export NODE_OPTIONS=--no-deprecation && react-app-rewired build",
+    "test": "export NODE_OPTIONS=--no-deprecation && react-app-rewired test",
     "eject": "react-scripts eject",
     "serve": "serve -s build -l 8080"
   },
-  "proxy": "http://localhost:3001",
   "browserslist": {
     "production": [
       ">0.2%",

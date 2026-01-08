@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getApiUrl } from '../config/api';
 
 function Estoque() {
   const [produtos, setProdutos] = useState([]);
@@ -10,7 +11,7 @@ function Estoque() {
   const [visualizacao, setVisualizacao] = useState('tabela'); // 'tabela' ou 'grid'
 
   useEffect(() => {
-    fetch('/api/produtos')
+    fetch(getApiUrl('api/produtos'))
       .then(res => res.json())
       .then(setProdutos);
   }, []);
@@ -134,7 +135,7 @@ function Estoque() {
         setProdutoRemover({...produtoRemover, estoque: novoEstoque});
         setQuantidadeRemover("");
         // Atualiza todos os produtos após alteração
-        const resProdutos = await fetch('/api/produtos');
+        const resProdutos = await fetch(getApiUrl('api/produtos'));
         if (resProdutos.ok) {
           const lista = await resProdutos.json();
           setProdutosAtualizados(lista);
@@ -173,7 +174,7 @@ function Estoque() {
         setProdutoBuscado({...produtoBuscado, estoque: novoEstoque});
         setQuantidade("");
         // Atualiza todos os produtos após alteração
-        const resProdutos = await fetch('/api/produtos');
+        const resProdutos = await fetch(getApiUrl('api/produtos'));
         if (resProdutos.ok) {
           const lista = await resProdutos.json();
           setProdutosAtualizados(lista);

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PainelCompraProduto from './PainelCompraProduto';
+import { getApiUrl } from '../config/api';
 
 // Hook para buscar dados da empresa (endereço)
 function useEmpresaConfig() {
   const [empresa, setEmpresa] = useState(null);
   useEffect(() => {
-    fetch('/configuracoes')
+    fetch(getApiUrl('configuracoes'))
       .then(res => res.json())
       .then(data => setEmpresa(data));
   }, []);
@@ -22,7 +23,7 @@ function ProdutoVenda({ cliente }) {
   const empresaConfig = useEmpresaConfig();
 
   useEffect(() => {
-    fetch('/api/produtos')
+    fetch(getApiUrl('api/produtos'))
       .then(res => res.json())
       .then(produtos => {
         const prod = produtos.find(p => String(p.id) === String(id) && (String(p.moeda).toLowerCase() === 'real' || String(p.moeda).toLowerCase() === 'r$'));
