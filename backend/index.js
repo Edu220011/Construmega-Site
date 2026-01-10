@@ -844,7 +844,7 @@ app.post('/pagamento/criar', async (req, res) => {
         excluded_payment_types: [],
         installments: 1
       },
-      notification_url: `${process.env.BACKEND_URL || 'http://localhost:3001'}/pagamento/webhook`
+      notification_url: `${process.env.BACKEND_URL || 'https://construmega.online'}/pagamento/webhook`
     };
 
     console.log('MP_ACCESS_TOKEN definido:', !!process.env.MP_ACCESS_TOKEN);
@@ -1067,7 +1067,7 @@ app.post('/pagamento/criar-carrinho', autenticarToken, async (req, res) => {
       },
       external_reference: `carrinho_${usuarioId}_${Date.now()}`,
       payment_methods: paymentMethods,
-      notification_url: `${process.env.BACKEND_URL || 'http://localhost:3001'}/pagamento/webhook`
+      notification_url: `${process.env.BACKEND_URL || 'https://construmega.online'}/pagamento/webhook`
     };
 
     console.log('Criando preferência do carrinho...');
