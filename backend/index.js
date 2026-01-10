@@ -30,7 +30,11 @@ const corsOptions = {
       'http://construmega.com.br',
       'https://construmega.com.br',
       'http://www.construmega.com.br',
-      'https://www.construmega.com.br'
+      'https://www.construmega.com.br',
+      'http://construmega.online',
+      'https://construmega.online',
+      'http://www.construmega.online',
+      'https://www.construmega.online'
     ];
     
     // Permite requisições sem origin (ex: Postman, curl) em desenvolvimento
