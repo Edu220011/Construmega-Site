@@ -148,7 +148,7 @@ app.post('/login', async (req, res) => {
 console.log('✅ Rota /login registrada');
 
 // Adicionar pontos ao usuário
-app.post('/usuarios/:id/pontos', async (req, res) => {
+app.post('/api/usuarios/:id/pontos', async (req, res) => {
   try {
     console.log('Recebido body:', req.body);
     const pontos = req.body && req.body.pontos;
