@@ -18,7 +18,7 @@ function AdicionarPontosForm() {
     if (!idBusca) return;
     setVerificando(true);
     try {
-      const res = await fetch(getApiUrl('usuarios'));
+      const res = await fetch('/usuarios');
       if (res.ok) {
         const lista = await res.json();
         const usuario = lista.find(u => u.id === idBusca);
@@ -54,9 +54,13 @@ function AdicionarPontosForm() {
     }
     setLoading(true);
     try {
-      const res = await fetch(getApiUrl(`usuarios/${id}/pontos`), {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/usuarios/${id}/pontos`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ pontos: Number(pontos) })
       });
       if (res.ok) {
