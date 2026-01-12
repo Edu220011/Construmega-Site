@@ -1305,3 +1305,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`💳 MP Access Token: ${process.env.MP_ACCESS_TOKEN ? 'CONFIGURADO' : 'NÃO CONFIGURADO'}`);
   console.log('✅ Servidor iniciado com sucesso!');
 });
+
+// Final
+
