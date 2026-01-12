@@ -55,12 +55,13 @@ function AdicionarPontosForm() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const res = await fetch(`/usuarios/${id}/pontos`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers,
         body: JSON.stringify({ pontos: Number(pontos) })
       });
       if (res.ok) {
