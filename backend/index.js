@@ -148,7 +148,7 @@ app.post('/login', async (req, res) => {
 console.log('✅ Rota /login registrada');
 
 // Adicionar pontos ao usuário
-app.post('/usuarios/:id/pontos', autenticarToken, async (req, res) => {
+app.post('/usuarios/:id/pontos', async (req, res) => {
   try {
     console.log('Recebido body:', req.body);
     const pontos = req.body && req.body.pontos;
@@ -198,8 +198,6 @@ app.post('/usuarios/:id/pontos', async (req, res) => {
     console.error('Erro ao adicionar pontos:', err);
     res.status(500).json({ erro: 'Erro interno do servidor', detalhes: String(err) });
   }
-});
-
 // Para qualquer rota não-API, retorna o index.html do React
 app.get('/configuracoes', async (req, res) => {
   let config = await readJson('configuracoes.json');
