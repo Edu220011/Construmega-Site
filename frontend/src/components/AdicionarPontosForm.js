@@ -59,7 +59,7 @@ function AdicionarPontosForm() {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      const res = await fetch(`/usuarios/${id}/pontos`, {
+      const res = await fetch(`/api/usuarios/${id}/pontos`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ pontos: Number(pontos) })
